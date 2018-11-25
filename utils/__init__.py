@@ -1,9 +1,16 @@
 import bpy
 import bmesh
-from math import sin, cos, pi
-tau = 2*pi
 import colorsys
 import os
+
+from math import pi
+from math import radians
+from math import sin, cos, pi
+tau = 2*pi
+
+import mathutils
+from mathutils import Euler
+
 
 
 def removeObject(obj):
@@ -212,4 +219,55 @@ def bmeshToObject(bm, name='Object'):
     bpy.context.scene.objects.link(obj)
     bpy.context.scene.update()
 
+    return obj
+
+
+
+################
+# My own utils #
+################
+
+class ObjectLoader:
+    def __init__(self, lib_path, directory):
+        self.lib_path = lib_path
+        self.directory = directory
+        self.obj_names_dict = {}
+
+
+    def load(self, object_name):
+        filepath  = self.lib_path + self.directory + object_name
+        directory = self.lib_path + self.directory
+        filename  = object_name
+
+        bpy.ops.wm.append(
+            filepath=filepath,
+            filename=filename,
+            directory=directory, 
+            autoselect=True)
+
+        obj = bpy.context.selected_objects[0]
+        obj.location = mathutils.Vector((0,0,0))
+
+        if object_name in self.obj_names_dict:
+            self.obj_names_dict[object_name] += 1
+        else:
+            self.obj_names_dict[object_name] = 0
+
+        obj.name += "_"+str(self.obj_names_dict[object_name])
+
+        return obj
+
+
+def moveObj(obj, vec):
+    obj.location += mathutils.Vector(vec)
+    return obj
+
+def rotateObj(obj, angles):
+    obj.rotation_euler = (radians(angles[0]), radians(angles[1]), radians(angles[2]))
+
+
+def resizeObj(obj, vals):
+    obj.select=True
+    bpy.ops.transform.resize(value=vals)
+    obj.select=False
     return obj
