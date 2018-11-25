@@ -92,12 +92,11 @@ def loadShelf(loader, heights=[2,1,1], scale=0.5):
     base = loader.load(shelf_bot_name)
     utils.resizeObj(base, (scale,1,1))
 
-    heights = []
+    z_coords = []
 
     prev_obj = None
     for h_coef in heights:   
         obj = loader.load(shelf_mid_name)
-        #obj.location.z += (obj.dimensions.y)/4
         utils.resizeObj(obj, (scale,1,h_coef))
         if not prev_obj is None:
             obj.location.z += prev_obj.location.z
@@ -110,10 +109,10 @@ def loadShelf(loader, heights=[2,1,1], scale=0.5):
         obj.location.z += prev_obj.location.z+prev_obj.dimensions.y
         prev_obj = obj
 
-        heights.append(obj.location.z)
+        z_coords.append(obj.location.z)
 
 
-    return heights
+    return z_coords
 
 
 if __name__ == '__main__':
