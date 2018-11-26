@@ -25,7 +25,7 @@ def main():
     utils.removeAll()
 
     # Create camera
-    bpy.ops.object.add(type='CAMERA', location=(0, -3.5, 0))
+    bpy.ops.object.add(type='CAMERA', location=(0, -3.5, 1))
     cam = bpy.context.object
     cam.rotation_euler = Euler((pi/2, 0, 0), 'XYZ')
     # Make this the current camera
@@ -34,7 +34,18 @@ def main():
 
     objloader = utils.ObjectLoader(assets_blend_path, object_dir)
     
-    loadShelf(objloader)
+    places = loadShelf(objloader)
+
+    mat = bpy.data.materials.new(name="DegugMat")
+    mat.diffuse_color = (1, 0, 0)
+
+    for pt1, pt2 in places:
+        bpy.ops.mesh.primitive_ico_sphere_add(location=pt1, size=0.02)
+        sph1 = bpy.context.active_object
+        sph1.data.materials.append(mat)
+        bpy.ops.mesh.primitive_ico_sphere_add(location=pt2, size=0.02)
+        sph2 = bpy.context.active_object
+        sph2.data.materials.append(mat)
 
     #obj = objloader.load("cgaxis_models_32_10_05.010")
     #obj = utils.moveObj(obj, (0.5, 0, 0))
@@ -84,35 +95,45 @@ def main():
 
 
 
-def loadShelf(loader, heights=[2,1,1], scale=0.5):
+def loadShelf(loader, heights=[2,1,1,1], scale=(0.4,0.5)):
     shelf_bot_name = "cgaxis_models_32_10_15.003" 
     shelf_mid_name = "cgaxis_models_32_10_15.006" 
     shelf_top_name = "cgaxis_models_32_10_15.010" 
 
-    base = loader.load(shelf_bot_name)
-    utils.resizeObj(base, (scale,1,1))
+    scale_l, scale_d = scale
 
-    z_coords = []
+    places = []
+
+    base = loader.load(shelf_bot_name)
+    utils.resizeObj(base, (scale_l,scale_d,1))
 
     prev_obj = None
     for h_coef in heights:   
         obj = loader.load(shelf_mid_name)
-        utils.resizeObj(obj, (scale,1,h_coef))
+        utils.resizeObj(obj, (scale_l,scale_d,h_coef))
+        back_offset = obj.dimensions.z
         if not prev_obj is None:
             obj.location.z += prev_obj.location.z
         else:
             obj.location.z += base.dimensions.y
+            
+            right_pt = (-base.dimensions.z/2*0.93, -back_offset, base.dimensions.y)
+            left_pt = (base.dimensions.z/2*0.93, -base.dimensions.x*0.9, base.dimensions.y)
+            places.append([right_pt, left_pt])
+
         prev_obj = obj
 
         obj = loader.load(shelf_top_name)
-        utils.resizeObj(obj, (scale,1,1))
+        utils.resizeObj(obj, (scale_l,scale_d,1))
         obj.location.z += prev_obj.location.z+prev_obj.dimensions.y
         prev_obj = obj
 
-        z_coords.append(obj.location.z)
+        right_pt = (-obj.dimensions.z/2, -back_offset, obj.location.z)
+        left_pt = (obj.dimensions.z/2, -obj.dimensions.x, obj.location.z)
 
+        places.append([right_pt, left_pt])
 
-    return z_coords
+    return places
 
 
 if __name__ == '__main__':
