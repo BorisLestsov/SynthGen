@@ -8,19 +8,31 @@ else:
     cwd = os.path.dirname(bpy.context.space_data.text.filepath)
 
 sys.path.append(cwd)
-import utils
+import package.utils as utils
+import package.sample as sample
 
 from math import pi
 from mathutils import Euler
 tau = 2*pi
 
-
+import numpy as np
 
 assets_blend_path = "./assets/model_assets.blend"
 object_dir = "/Object/"
 
 
 def main():
+
+    # Specify folder to save rendering
+    render_folder = os.path.join(cwd, 'result')
+    if(not os.path.exists(render_folder)):
+        os.mkdir(render_folder)
+
+
+
+
+    np.random.seed(0)
+
     # Remove all elements
     utils.removeAll()
 
@@ -34,9 +46,9 @@ def main():
 
     objloader = utils.ObjectLoader(assets_blend_path, object_dir)
     
-    places = loadShelf(objloader)
+    places = sample.loadShelf(objloader)
 
-    mat = bpy.data.materials.new(name="DegugMat")
+    mat = bpy.data.materials.new(name="DebugMat")
     mat.diffuse_color = (1, 0, 0)
 
     for pt1, pt2 in places:
@@ -47,23 +59,61 @@ def main():
         sph2 = bpy.context.active_object
         sph2.data.materials.append(mat)
 
-    #obj = objloader.load("cgaxis_models_32_10_05.010")
-    #obj = utils.moveObj(obj, (0.5, 0, 0))
-    
-    #obj2 = objloader.load("cgaxis_models_32_10_05.010")
+    objlist = []
+    with open("objlist.txt") as f:
+        for line in f:
+            objlist.append(line.split()[0])
+
+
+    NUM_OBJ = 3
+
+    for obj_i in range(NUM_OBJ):
+        obj_idx = np.random.randint(len(objlist))
+        obj = objloader.load(objlist[obj_idx])
+
+        stage_idx = np.random.randint(len(places))
+        pt1, pt2 = places[stage_idx]
+
+        random_loc_x = np.random.uniform(pt1[0], pt2[0])
+        random_loc_y = np.random.uniform(pt1[1], pt2[1])
+        random_loc_z = np.random.uniform(pt1[2], pt2[2])
+
+        obj = utils.moveObj(obj, (random_loc_x, random_loc_y, random_loc_z))
+
+        obj.pass_index = obj_idx
+
+        scene = bpy.data.scenes['Scene']
+        scene.render.layers["RenderLayer"].use_pass_object_index = True
+        scene.use_nodes = True
+        renderlayers_node = scene.node_tree.nodes["Render Layers"]
+
+        idmask_node = scene.node_tree.nodes.new("CompositorNodeIDMask")
+        idmask_node.name = "idmask_{}".format(str(obj_idx))
+        idmask_node.index = obj_idx
+        scene.node_tree.links.new(renderlayers_node.outputs["IndexOB"], idmask_node.inputs["ID value"])
+
+        file_output_node = scene.node_tree.nodes.new("CompositorNodeOutputFile")
+        file_output_node.name = "fileout_{}".format(str(obj_idx))
+        file_output_node.base_path = os.path.join(render_folder, 'res_cam_{}_obj_{}'.format(0, obj_idx))
+        scene.node_tree.links.new(idmask_node.outputs["Alpha"], file_output_node.inputs["Image"])
+
+
+
+    # for i in scene.node_tree.nodes:
+    #    print(i.name)
 
 
     
 
 
+    #file_output_node.location.y += file_output_node.height
+
+    #exit(0)
 
 
 
 
-    # Specify folder to save rendering
-    render_folder = os.path.join(cwd, 'result')
-    if(not os.path.exists(render_folder)):
-        os.mkdir(render_folder)
+
 
     # Render image
     # for scene in bpy.data.scenes:
@@ -90,50 +140,12 @@ def main():
         rnd.filepath = os.path.join(render_folder, 'res_cam_{}.png'.format(i))
         bpy.ops.render.render(write_still=True)
 
+
+    
+
     bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)
 
 
-
-
-def loadShelf(loader, heights=[2,1,1,1], scale=(0.4,0.5)):
-    shelf_bot_name = "cgaxis_models_32_10_15.003" 
-    shelf_mid_name = "cgaxis_models_32_10_15.006" 
-    shelf_top_name = "cgaxis_models_32_10_15.010" 
-
-    scale_l, scale_d = scale
-
-    places = []
-
-    base = loader.load(shelf_bot_name)
-    utils.resizeObj(base, (scale_l,scale_d,1))
-
-    prev_obj = None
-    for h_coef in heights:   
-        obj = loader.load(shelf_mid_name)
-        utils.resizeObj(obj, (scale_l,scale_d,h_coef))
-        back_offset = obj.dimensions.z
-        if not prev_obj is None:
-            obj.location.z += prev_obj.location.z
-        else:
-            obj.location.z += base.dimensions.y
-            
-            right_pt = (-base.dimensions.z/2*0.93, -back_offset, base.dimensions.y)
-            left_pt = (base.dimensions.z/2*0.93, -base.dimensions.x*0.9, base.dimensions.y)
-            places.append([right_pt, left_pt])
-
-        prev_obj = obj
-
-        obj = loader.load(shelf_top_name)
-        utils.resizeObj(obj, (scale_l,scale_d,1))
-        obj.location.z += prev_obj.location.z+prev_obj.dimensions.y
-        prev_obj = obj
-
-        right_pt = (-obj.dimensions.z/2, -back_offset, obj.location.z)
-        left_pt = (obj.dimensions.z/2, -obj.dimensions.x, obj.location.z)
-
-        places.append([right_pt, left_pt])
-
-    return places
 
 
 if __name__ == '__main__':
