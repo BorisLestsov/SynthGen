@@ -12,6 +12,9 @@ import mathutils
 from mathutils import Euler
 
 
+import cv2
+import numpy as np
+
 
 def removeObject(obj):
     if obj.type == 'MESH':
@@ -135,6 +138,8 @@ def removeAll(type=None):
         # Remove all elements in scene
         bpy.ops.object.select_by_layer()
         bpy.ops.object.delete(use_global=False)
+
+    
 
 
 def simpleMaterial(diffuse_color):
@@ -271,3 +276,21 @@ def resizeObj(obj, vals):
     bpy.ops.transform.resize(value=vals)
     obj.select=False
     return obj
+
+
+
+def postprocessResult(cfg):
+    dirs = [d for d in os.listdir(cfg["render_folder"]) if d.startswith("cam_")]
+    cam_dirs = [d for d in dirs if d.startswith("cam_{}".format(0))]
+    result = cv2.imread(os.path.join(cfg["render_folder"], "res_cam_{}.png".format(0)))
+    result = np.zeros(shape=(result.shape[0], result.shape[1], 100), dtype=np.uint8)
+
+    for d in cam_dirs:
+        maskpath = os.path.join(cfg["render_folder"], d, "Image0001.png")
+        obj_idx = int(d.split('_')[-1])
+        print(maskpath)
+        mask = cv2.imread(maskpath)
+        result[..., obj_idx] = mask[..., 0]
+    np.savez_compressed(os.path.join(cfg["render_folder"], "masks.npz"), result)
+    cv2.imwrite(os.path.join(cfg["render_folder"], "mask_res.png"), result.sum(axis=2))
+
