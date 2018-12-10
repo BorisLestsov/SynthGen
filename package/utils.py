@@ -128,7 +128,7 @@ def rainbowLights(r=5, n=100, freq=2, energy=0.1):
         obj.data.energy = energy
 
 
-def removeAll(type=None):
+def removeAll(scene, type=None):
     # Possible type: ‘MESH’, ‘CURVE’, ‘SURFACE’, ‘META’, ‘FONT’, ‘ARMATURE’, ‘LATTICE’, ‘EMPTY’, ‘CAMERA’, ‘LAMP’
     if type:
         bpy.ops.object.select_all(action='DESELECT')
@@ -138,6 +138,13 @@ def removeAll(type=None):
         # Remove all elements in scene
         bpy.ops.object.select_by_layer()
         bpy.ops.object.delete(use_global=False)
+
+    scene.node_tree
+    scene.use_nodes=True
+    nodes = scene.node_tree.nodes
+    for node in nodes:
+        if not node.name in ["Render Layers", "Composite"]:
+            nodes.remove(node)
 
     
 
@@ -232,36 +239,6 @@ def bmeshToObject(bm, name='Object'):
 # My own utils #
 ################
 
-class ObjectLoader:
-    def __init__(self, lib_path, directory):
-        self.lib_path = lib_path
-        self.directory = directory
-        self.obj_names_dict = {}
-
-
-    def load(self, object_name):
-        filepath  = self.lib_path + self.directory + object_name
-        directory = self.lib_path + self.directory
-        filename  = object_name
-
-        bpy.ops.wm.append(
-            filepath=filepath,
-            filename=filename,
-            directory=directory, 
-            autoselect=True)
-
-        obj = bpy.context.selected_objects[0]
-        obj.location = mathutils.Vector((0,0,0))
-
-        if object_name in self.obj_names_dict:
-            self.obj_names_dict[object_name] += 1
-        else:
-            self.obj_names_dict[object_name] = 0
-
-        obj.name += "_"+str(self.obj_names_dict[object_name])
-
-        return obj
-
 
 def moveObj(obj, vec):
     obj.location += mathutils.Vector(vec)
@@ -280,17 +257,63 @@ def resizeObj(obj, vals):
 
 
 def postprocessResult(cfg):
+
+    def find_bound(mask, axis, f):
+        nonzero_ind = mask.any(axis=axis).nonzero()[0]
+        return f(nonzero_ind)
+
     dirs = [d for d in os.listdir(cfg["render_folder"]) if d.startswith("cam_")]
     cam_dirs = [d for d in dirs if d.startswith("cam_{}".format(0))]
     result = cv2.imread(os.path.join(cfg["render_folder"], "res_cam_{}.png".format(0)))
     result = np.zeros(shape=(result.shape[0], result.shape[1], 100), dtype=np.uint8)
 
+    boxes = []
+    f = open(os.path.join(cfg["render_folder"], "box_coords.txt"), 'w')
     for d in cam_dirs:
         maskpath = os.path.join(cfg["render_folder"], d, "Image0001.png")
-        obj_idx = int(d.split('_')[-1])
+        class_idx, obj_idx = int(d.split('_')[-2]), int(d.split('_')[-1])
         print(maskpath)
-        mask = cv2.imread(maskpath)
-        result[..., obj_idx] = mask[..., 0]
-    np.savez_compressed(os.path.join(cfg["render_folder"], "masks.npz"), result)
-    cv2.imwrite(os.path.join(cfg["render_folder"], "mask_res.png"), result.sum(axis=2))
+        mask = cv2.imread(maskpath)[..., 0]
+        if mask.any() != 0:
+            bbox = (find_bound(mask, 0, min), find_bound(mask, 1, min), find_bound(mask, 0, max), find_bound(mask, 1, max))
+            result[bbox[1]:bbox[3], bbox[0]:bbox[2], class_idx] = mask[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+            f.write('{} {} {} {} {} {}\n'.format(obj_idx, class_idx, *bbox))
+            boxes.append(bbox)
+    f.close()
 
+    np.savez_compressed(os.path.join(cfg["render_folder"], "masks.npz"), result)
+
+    colors = np.random.uniform(0.25, 1., size=(result.shape[-1], 3))
+    dbg = np.zeros(shape=(result.shape[0], result.shape[1], result.shape[2], 3))
+    dbg[..., :] = result[..., None]
+    dbg *= colors[None, None, ...]
+    dbg = dbg.sum(axis=2)
+    for i, bbox in enumerate(boxes):
+        cv2.rectangle(dbg, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 255, 255), 1)
+
+    cv2.imwrite(os.path.join(cfg["render_folder"], "mask_res.png"), dbg)
+
+
+
+def exec_command(command, need_print=True):
+    if need_print:
+        print(command)
+    os.system(command)
+
+def copyResultToOutputFolder(cfg, cur_out_dir):
+    dest_dir = os.path.join(cfg["output_folder"], cur_out_dir)
+    command = "mkdir -p {}".format(dest_dir)
+    exec_command(command)
+
+    command = 'cp {} {} {} {} -t {}'.format(os.path.join(cfg["render_folder"], "mask_res.png"),
+                                         os.path.join(cfg["render_folder"], "masks.npz"),
+                                         os.path.join(cfg["render_folder"], "box_coords.txt"),
+                                         os.path.join(cfg["render_folder"], "res_cam_{}.png".format(0)), 
+                                         dest_dir)
+    exec_command(command)
+
+
+
+def clearRenderFolder(cfg):
+    command = 'rm -rf {}/*'.format(cfg["render_folder"])
+    exec_command(command)

@@ -6,9 +6,120 @@ import os
 import package.utils as utils
 
 from math import pi
+import mathutils
 from mathutils import Euler
 tau = 2*pi
 import numpy as np
+
+
+
+
+class ObjectLoader:
+    def __init__(self, lib_path, directory):
+        self.lib_path = lib_path
+        self.directory = directory
+        self.obj_names_dict = {}
+        self.uniq_counter = 1
+
+
+    def load(self, object_name):
+        filepath  = self.lib_path + self.directory + object_name
+        directory = self.lib_path + self.directory
+        filename  = object_name
+
+        bpy.ops.wm.append(
+            filepath=filepath,
+            filename=filename,
+            directory=directory, 
+            autoselect=True)
+
+        obj = bpy.context.selected_objects[0]
+        obj.location = mathutils.Vector((0,0,0))
+
+        if object_name in self.obj_names_dict:
+            self.obj_names_dict[object_name] += 1
+        else:
+            self.obj_names_dict[object_name] = 0
+
+        obj.name += "_"+str(self.obj_names_dict[object_name])
+
+        return obj
+
+    def giveUniqueCounter(self):
+        self.uniq_counter += 1
+        return self.uniq_counter
+
+
+class ObjectSampler:
+    def __init__(self, objlist_f, loader, modifier, obj_cache=None):
+        self.objlist = []
+        self.loader = loader
+        self.modifier = modifier
+
+        self.obj_cache = obj_cache if not obj_cache is None else {}
+        with open(objlist_f) as f:
+            for line in f:
+                self.objlist.append(line.split()[0])
+
+    # def buildObjCache(self):
+    #     for i, model_name in enumerate(objlist):
+    #         obj = self.loader.load(objlist[obj_idx])
+    #         self.obj_cache[model_name] = {}
+    #         self.obj_cache[model_name]
+
+
+    def sampleObjects(self, possible_locations):
+        NUM_TRIES = 30
+
+        time_since = 0
+        for try_i in range(NUM_TRIES):
+            if time_since > 4:
+                break
+
+            obj_idx = np.random.randint(len(self.objlist))
+            orig_obj = self.loader.load(self.objlist[obj_idx])
+
+            w, d, h = orig_obj.dimensions
+
+            found = False
+            randidx = np.random.permutation(len(possible_locations))
+            for i in randidx:
+                pt1, pt2 = possible_locations[i]
+                place_h = pt2[2] - pt1[2]
+                place_w = pt2[0] - pt1[0]
+                place_d = pt1[1] - pt2[1]
+
+                times_h = place_h / (h*1.1)
+                times_w = place_w / (w*1.1)
+                times_d = place_d / (d*1.1)
+
+                if (times_h > 1) and (times_w > 1) and (times_d > 1):
+                    found = True
+                    break
+            if not found:
+                time_since += 1
+                bpy.data.objects.remove(orig_obj, True)
+                continue
+
+            coef_w = np.random.uniform(0.25, 1)
+
+            marg_w = pt1[0] + w/2
+            marg_d = pt2[1] + d/2
+
+
+            for i_w in range(int(times_w*coef_w)):
+                for i_d in range(int(times_d)):
+                    obj = orig_obj.copy()
+                    self.modifier.scene.objects.link(obj)
+
+                    obj = utils.moveObj(obj, (marg_w+i_w*w*1.1, marg_d+d*i_d*1.1, pt1[2]))
+                    if i_d == 0:
+                        self.modifier.addObjectMaskOutput(obj, obj_idx)
+
+                pt1[0] += w*1.1
+
+            bpy.data.objects.remove(orig_obj, True)
+
 
 
 
@@ -16,20 +127,19 @@ class SynthGen:
 
     def __init__(self, cfg):
         self.cfg = cfg
-        self.objloader = utils.ObjectLoader(cfg["assets_blend_path"], cfg["object_dir"])
+        self.loader = ObjectLoader(cfg["assets_blend_path"], cfg["object_dir"])
+        self.modifier = ObjectModifier(cfg)
+        self.sampler = ObjectSampler(cfg["objlist_file"], self.loader, self.modifier)
+        self.scene = bpy.data.scenes[self.cfg['scene_name']]
 
-
-    def globalSetup(self):
-        np.random.seed(0)
-
-
-
+    def globalSetup(self, seed=0):
+        np.random.seed(seed)
 
 
     def setupEnv(self):
 
         # Remove all elements
-        utils.removeAll()
+        utils.removeAll(self.scene)
 
         # Create camera
         bpy.ops.object.add(type='CAMERA', location=(0, -3.5, 1))
@@ -59,7 +169,7 @@ class SynthGen:
         # create emission node
         node_emission = nodes.new(type='ShaderNodeEmission')
         node_emission.inputs[0].default_value = (1,1,1,1)  # green RGBA
-        node_emission.inputs[1].default_value = 10.0 # strength
+        node_emission.inputs[1].default_value = 5.0 # strength
         node_emission.location = 0,0
 
         # create output node
@@ -70,6 +180,14 @@ class SynthGen:
         link = links.new(node_emission.outputs[0], node_output.inputs[0])
 
         plane.data.materials.append(mat)
+
+        for i in range(3):
+            obj = plane.copy()
+            self.scene.objects.link(obj)
+            utils.moveObj(obj, ( plane.dimensions.x*i*5, 0, 0))
+            obj = plane.copy()
+            self.scene.objects.link(obj)
+            utils.moveObj(obj, (-plane.dimensions.x*i*5, 0, 0))
 
 
 
@@ -112,3 +230,33 @@ class SynthGen:
         #     self.rnd.filepath = os.path.join(self.cfg["render_folder"], 'res_cam_{}.png'.format(i))
         #     bpy.ops.render.render(write_still=True)
 
+
+
+
+
+class ObjectModifier:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.scene = bpy.data.scenes[self.cfg['scene_name']]
+        self.cur_pass = 1
+
+
+    def addObjectMaskOutput(self, obj, class_id):
+
+        obj.pass_index = self.cur_pass
+
+        self.scene.render.layers["RenderLayer"].use_pass_object_index = True
+        self.scene.use_nodes = True
+        renderlayers_node = self.scene.node_tree.nodes["Render Layers"]
+
+        idmask_node = self.scene.node_tree.nodes.new("CompositorNodeIDMask")
+        idmask_node.name = "idmask_{}_{}".format(str(class_id), str(obj.pass_index))
+        idmask_node.index = obj.pass_index
+        self.scene.node_tree.links.new(renderlayers_node.outputs["IndexOB"], idmask_node.inputs["ID value"])
+
+        file_output_node = self.scene.node_tree.nodes.new("CompositorNodeOutputFile")
+        file_output_node.name = "fileout_{}_{}".format(str(class_id), obj.pass_index)
+        file_output_node.base_path = os.path.join(self.cfg["render_folder"], 'cam_{}_obj_{}_{}'.format(0, class_id, obj.pass_index))
+        self.scene.node_tree.links.new(idmask_node.outputs["Alpha"], file_output_node.inputs["Image"])
+
+        self.cur_pass += 1
