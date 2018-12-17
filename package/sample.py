@@ -6,8 +6,6 @@ import os
 import package.utils as utils
 
 from math import pi
-import mathutils
-from mathutils import Euler
 tau = 2*pi
 import numpy as np
 
@@ -22,7 +20,7 @@ class ObjectLoader:
         self.uniq_counter = 1
 
 
-    def load(self, object_name):
+    def load(self, object_name, link=True):
         filepath  = self.lib_path + self.directory + object_name
         directory = self.lib_path + self.directory
         filename  = object_name
@@ -31,10 +29,11 @@ class ObjectLoader:
             filepath=filepath,
             filename=filename,
             directory=directory, 
+            link=link, 
             autoselect=True)
 
         obj = bpy.context.selected_objects[0]
-        obj.location = mathutils.Vector((0,0,0))
+        utils.moveObjAbs(obj, (0,0,0))
 
         if object_name in self.obj_names_dict:
             self.obj_names_dict[object_name] += 1
@@ -51,12 +50,13 @@ class ObjectLoader:
 
 
 class ObjectSampler:
-    def __init__(self, objlist_f, loader, modifier, obj_cache=None):
+    def __init__(self, objlist_f, loader, modifier, augmenter, obj_cache=None):
         self.objlist = []
         self.loader = loader
         self.modifier = modifier
+        self.augmenter = augmenter
 
-        self.obj_cache = obj_cache if not obj_cache is None else {}
+        #self.obj_cache = obj_cache if not obj_cache is None else {}
         with open(objlist_f) as f:
             for line in f:
                 self.objlist.append(line.split()[0])
@@ -69,14 +69,17 @@ class ObjectSampler:
 
 
     def sampleObjects(self, possible_locations):
-        NUM_TRIES = 30
+        NUM_TRIES = 100
+        BREAK_TOL = 20
+
+        num_placed = {i:np.random.randint(5, 10) for i in range(len(possible_locations))}
 
         time_since = 0
         for try_i in range(NUM_TRIES):
-            if time_since > 4:
+            if time_since > BREAK_TOL:
                 break
 
-            obj_idx = np.random.randint(len(self.objlist))
+            obj_idx = np.random.randint(1, len(self.objlist))
             orig_obj = self.loader.load(self.objlist[obj_idx])
 
             w, d, h = orig_obj.dimensions
@@ -89,7 +92,7 @@ class ObjectSampler:
                 place_w = pt2[0] - pt1[0]
                 place_d = pt1[1] - pt2[1]
 
-                times_h = place_h / (h*1.1)
+                times_h = place_h / (h)
                 times_w = place_w / (w*1.1)
                 times_d = place_d / (d*1.1)
 
@@ -100,21 +103,30 @@ class ObjectSampler:
                 time_since += 1
                 bpy.data.objects.remove(orig_obj, True)
                 continue
+            else:
+                time_since = 0
 
-            coef_w = np.random.uniform(0.25, 1)
+            coef_w = np.random.uniform(1/(num_placed[i]+1), 1/num_placed[i])
+            if int(times_w*coef_w) != 0 and num_placed[i] != 1: num_placed[i] -= 1
 
             marg_w = pt1[0] + w/2
             marg_d = pt2[1] + d/2
+            marg_h = pt1[2]
 
+            stackable = w > h/3 and d > h/3
+            times_h = 1 if not stackable else min(times_h, 3)
 
             for i_w in range(int(times_w*coef_w)):
-                for i_d in range(int(times_d)):
-                    obj = orig_obj.copy()
-                    self.modifier.scene.objects.link(obj)
+                for i_h in range(int(times_h)):
+                    for i_d in range(int(times_d)):
+                        obj = orig_obj.copy()
 
-                    obj = utils.moveObj(obj, (marg_w+i_w*w*1.1, marg_d+d*i_d*1.1, pt1[2]))
-                    if i_d == 0:
-                        self.modifier.addObjectMaskOutput(obj, obj_idx)
+                        self.augmenter.runtime_augment_rot(orig_obj)
+
+                        self.modifier.scene.objects.link(obj)
+                        obj = utils.moveObj(obj, (marg_w+i_w*w*1.1, marg_d+d*i_d*1.1, marg_h+h*i_h))
+                        if i_d == 0:
+                            self.modifier.addObjectMaskOutput(obj, obj_idx)
 
                 pt1[0] += w*1.1
 
@@ -129,65 +141,12 @@ class SynthGen:
         self.cfg = cfg
         self.loader = ObjectLoader(cfg["assets_blend_path"], cfg["object_dir"])
         self.modifier = ObjectModifier(cfg)
-        self.sampler = ObjectSampler(cfg["objlist_file"], self.loader, self.modifier)
+        self.augmenter = ObjectAugmenter(cfg)
+        self.sampler = ObjectSampler(cfg["objlist_file"], self.loader, self.modifier, self.augmenter)
         self.scene = bpy.data.scenes[self.cfg['scene_name']]
 
-    def globalSetup(self, seed=0):
-        np.random.seed(seed)
-
-
-    def setupEnv(self):
-
-        # Remove all elements
-        utils.removeAll(self.scene)
-
-        # Create camera
-        bpy.ops.object.add(type='CAMERA', location=(0, -3.5, 1))
-        self.cam = bpy.context.object
-        self.cam.rotation_euler = Euler((pi/2, 0, 0), 'XYZ')
-        # Make this the current camera
-        bpy.context.scene.camera = self.cam
-
-
-        bpy.ops.mesh.primitive_cube_add()
-        cube = bpy.context.active_object
-        utils.resizeObj(cube, (5, 5, 2.5))
-        utils.moveObj(cube, (0, 0, cube.dimensions.z/2-0.001))
-
-
-        bpy.ops.mesh.primitive_plane_add()
-        plane = bpy.context.active_object
-        utils.resizeObj(plane, (0.1, 2, 1))
-        utils.moveObj(plane, (0, 0, 4))
-
-        mat = bpy.data.materials.new(name="LampMat")
-        mat.use_nodes=True
-        nodes = mat.node_tree.nodes
-        for node in nodes:
-            nodes.remove(node)
-
-        # create emission node
-        node_emission = nodes.new(type='ShaderNodeEmission')
-        node_emission.inputs[0].default_value = (1,1,1,1)  # green RGBA
-        node_emission.inputs[1].default_value = 5.0 # strength
-        node_emission.location = 0,0
-
-        # create output node
-        node_output = nodes.new(type='ShaderNodeOutputMaterial')   
-        node_output.location = 400,0
-
-        links = mat.node_tree.links
-        link = links.new(node_emission.outputs[0], node_output.inputs[0])
-
-        plane.data.materials.append(mat)
-
-        for i in range(3):
-            obj = plane.copy()
-            self.scene.objects.link(obj)
-            utils.moveObj(obj, ( plane.dimensions.x*i*5, 0, 0))
-            obj = plane.copy()
-            self.scene.objects.link(obj)
-            utils.moveObj(obj, (-plane.dimensions.x*i*5, 0, 0))
+    def globalSetup(self, seed=None):
+        np.random.seed(self.cfg["seed"] if seed is None else seed)
 
 
 
@@ -239,24 +198,48 @@ class ObjectModifier:
         self.cfg = cfg
         self.scene = bpy.data.scenes[self.cfg['scene_name']]
         self.cur_pass = 1
+        self.dest_dir = self.cfg['render_folder']
+        self.outf = open(os.path.join(self.dest_dir, 'objects.txt'), 'w')
 
+        self.scene.render.layers["RenderLayer"].use_pass_object_index = True
+        self.scene.use_nodes = True
+        self.renderlayers_node = self.scene.node_tree.nodes["Render Layers"]
 
     def addObjectMaskOutput(self, obj, class_id):
 
         obj.pass_index = self.cur_pass
 
-        self.scene.render.layers["RenderLayer"].use_pass_object_index = True
-        self.scene.use_nodes = True
-        renderlayers_node = self.scene.node_tree.nodes["Render Layers"]
-
         idmask_node = self.scene.node_tree.nodes.new("CompositorNodeIDMask")
         idmask_node.name = "idmask_{}_{}".format(str(class_id), str(obj.pass_index))
         idmask_node.index = obj.pass_index
-        self.scene.node_tree.links.new(renderlayers_node.outputs["IndexOB"], idmask_node.inputs["ID value"])
+        self.scene.node_tree.links.new(self.renderlayers_node.outputs["IndexOB"], idmask_node.inputs["ID value"])
 
         file_output_node = self.scene.node_tree.nodes.new("CompositorNodeOutputFile")
         file_output_node.name = "fileout_{}_{}".format(str(class_id), obj.pass_index)
-        file_output_node.base_path = os.path.join(self.cfg["render_folder"], 'cam_{}_obj_{}_{}'.format(0, class_id, obj.pass_index))
+        outpath = os.path.join(self.dest_dir, 'cam_{}_obj_{}_{}'.format(0, class_id, obj.pass_index))
+        file_output_node.base_path = outpath
         self.scene.node_tree.links.new(idmask_node.outputs["Alpha"], file_output_node.inputs["Image"])
 
+        self.outf.write('{} {} {}\n'.format(outpath, class_id, obj.pass_index))
+        self.outf.flush()
+
         self.cur_pass += 1
+
+    def __del__(self):
+        self.outf.close()
+
+
+
+class ObjectAugmenter:
+    def __init__(self, cfg):
+        self.cfg = cfg
+
+    def runtime_augment_rot(self, obj):
+        rot_x = 0
+        rot_y = 0
+        rot_z = np.random.uniform(-pi/12, pi/12)
+        utils.rotateObj(obj, (rot_x, rot_y, rot_z))
+        return obj
+
+
+

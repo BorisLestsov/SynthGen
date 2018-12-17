@@ -15,45 +15,54 @@ from config import GLOBAL_CONF
 import package.utils as utils
 from package.sample import SynthGen, ObjectModifier
 
-import shelves.shelvesf as shelvesf
+from shelves.shelvesf import ShelvesFuncs
 
 import numpy as np
 
 
 def main():
 
-
     for i in range(GLOBAL_CONF['num_samples']):
+        print("Clearing render folder")
         utils.clearRenderFolder(GLOBAL_CONF)
 
+        print("Creating sampler")
         sampler = SynthGen(GLOBAL_CONF)
-
         sampler.globalSetup(seed=i)
-        sampler.setupEnv()
+        shelvesf = ShelvesFuncs(GLOBAL_CONF, sampler)
 
-        steps = np.random.randint(1, 5)
-        heights=[np.random.uniform(0.7, 2) for i in range(steps)]
-        scale_d = [np.random.uniform(0.5, 2)]
+        print("Creating environment")
+        shelvesf.setupEnv()
+        print("Creating camera")
+        shelvesf.setupCamera()
+        print("Creating lighting")
+        shelvesf.setupLighting()
+
+        print("Creating shelves")
+        steps = np.random.randint(4, 7)
+        heights=[np.random.uniform(1, 2) for i in range(steps)]
+        scale_d = [np.random.uniform(0.3, 0.7)]
         for _ in range(steps):
-            scale_d.append(np.random.uniform(0.5, scale_d[-1]))
-        scale_l = np.random.uniform(0.3, 0.7)
+            scale_d.append(np.random.uniform(0.3, scale_d[-1]))
+        scale_l = np.random.uniform(3.5, 4.5)
         places = shelvesf.loadShelf(sampler.loader, heights=heights, scale_d=scale_d, scale_l=scale_l)
 
+        print("Sampling objects")
         sampler.sampler.sampleObjects(places)
 
 
+        print("Rendering scene")
         sampler.setupRenderOptions()
         sampler.renderScene()
 
+        print("Postprocessing result")
         utils.postprocessResult(GLOBAL_CONF)
         utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i))
 
+        print("Saving blend file")
         bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
 
     utils.clearRenderFolder(GLOBAL_CONF)
-
-
-
 
 
 

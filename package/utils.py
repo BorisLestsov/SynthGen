@@ -244,8 +244,12 @@ def moveObj(obj, vec):
     obj.location += mathutils.Vector(vec)
     return obj
 
+def moveObjAbs(obj, vec):
+    obj.location = mathutils.Vector(vec)
+    return obj
+
 def rotateObj(obj, angles):
-    obj.rotation_euler = (radians(angles[0]), radians(angles[1]), radians(angles[2]))
+    obj.rotation_euler = Euler((angles[0], angles[1], angles[2]), 'XYZ')
 
 
 def resizeObj(obj, vals):
@@ -262,21 +266,34 @@ def postprocessResult(cfg):
         nonzero_ind = mask.any(axis=axis).nonzero()[0]
         return f(nonzero_ind)
 
-    dirs = [d for d in os.listdir(cfg["render_folder"]) if d.startswith("cam_")]
-    cam_dirs = [d for d in dirs if d.startswith("cam_{}".format(0))]
+    def safe_min(arr):
+        return min(arr) if len(arr)!=0 else 0
+
+    def safe_max(arr):
+        return max(arr) if len(arr)!=0 else 0
+
+    objdict = {}
+    with open(os.path.join(cfg["render_folder"], "objects.txt"), 'r') as f:
+        for line in f:
+            path, class_idx, obj_idx = line.split()
+            objdict[path] = (int(class_idx), int(obj_idx))
+
+    num_classes = cfg["num_raw_classes"]
+
     result = cv2.imread(os.path.join(cfg["render_folder"], "res_cam_{}.png".format(0)))
-    result = np.zeros(shape=(result.shape[0], result.shape[1], 100), dtype=np.uint8)
+    result = np.zeros(shape=(result.shape[0], result.shape[1], num_classes), dtype=np.uint8)
 
     boxes = []
     f = open(os.path.join(cfg["render_folder"], "box_coords.txt"), 'w')
-    for d in cam_dirs:
-        maskpath = os.path.join(cfg["render_folder"], d, "Image0001.png")
-        class_idx, obj_idx = int(d.split('_')[-2]), int(d.split('_')[-1])
+    for path, (class_idx, obj_idx) in objdict.items():
+        maskpath = os.path.join(path, "Image0001.png")
         print(maskpath)
         mask = cv2.imread(maskpath)[..., 0]
         if mask.any() != 0:
             bbox = (find_bound(mask, 0, min), find_bound(mask, 1, min), find_bound(mask, 0, max), find_bound(mask, 1, max))
-            result[bbox[1]:bbox[3], bbox[0]:bbox[2], class_idx] = mask[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+            if (bbox[2]-bbox[0]) < 5 or (bbox[3]-bbox[1]) < 5:
+                continue
+            result[bbox[1]:bbox[3], bbox[0]:bbox[2], class_idx] |= mask[bbox[1]:bbox[3], bbox[0]:bbox[2]]
             f.write('{} {} {} {} {} {}\n'.format(obj_idx, class_idx, *bbox))
             boxes.append(bbox)
     f.close()
@@ -287,7 +304,7 @@ def postprocessResult(cfg):
     dbg = np.zeros(shape=(result.shape[0], result.shape[1], result.shape[2], 3))
     dbg[..., :] = result[..., None]
     dbg *= colors[None, None, ...]
-    dbg = dbg.sum(axis=2)
+    dbg = dbg.max(axis=2)
     for i, bbox in enumerate(boxes):
         cv2.rectangle(dbg, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 255, 255), 1)
 
@@ -305,9 +322,10 @@ def copyResultToOutputFolder(cfg, cur_out_dir):
     command = "mkdir -p {}".format(dest_dir)
     exec_command(command)
 
-    command = 'cp {} {} {} {} -t {}'.format(os.path.join(cfg["render_folder"], "mask_res.png"),
+    command = 'cp {} {} {} {} {} -t {}'.format(os.path.join(cfg["render_folder"], "mask_res.png"),
                                          os.path.join(cfg["render_folder"], "masks.npz"),
                                          os.path.join(cfg["render_folder"], "box_coords.txt"),
+                                         os.path.join(cfg["render_folder"], "objects.txt"),
                                          os.path.join(cfg["render_folder"], "res_cam_{}.png".format(0)), 
                                          dest_dir)
     exec_command(command)
