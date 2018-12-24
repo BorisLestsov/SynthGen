@@ -57,6 +57,7 @@ def main():
 
         print("Postprocessing result")
         utils.postprocessResult(GLOBAL_CONF)
+        print("Copying result to output folder")
         utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i))
 
         print("Saving blend file")

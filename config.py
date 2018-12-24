@@ -1,4 +1,5 @@
 import sys, os
+import json
 
 GLOBAL_CONF = {
     "num_samples": 5,
@@ -31,17 +32,15 @@ GLOBAL_CONF = {
 }
 
 
-def init_conf(conf):
-    if not conf["is_inited"]:
-        conf['result_resolution_x'] = int(conf['resolution_x'] * conf['resolution_percentage'])/100
-        conf['result_resolution_y'] = int(conf['resolution_y'] * conf['resolution_percentage'])/100
+def init_conf(cfg):
+    if not cfg["is_inited"]:
+        cfg['result_resolution_x'] = int(cfg['resolution_x'] * cfg['resolution_percentage'])/100
+        cfg['result_resolution_y'] = int(cfg['resolution_y'] * cfg['resolution_percentage'])/100
 
-        conf["num_raw_classes"] = 0
-        with open(conf["objlist_file"]) as f:
-            for line in f:
-                if len(line.split()) != 0:
-                    conf["num_raw_classes"] += 1
-        conf["is_inited"] = True
+        with open(cfg["objlist_file"]) as f:
+            cfg["num_raw_classes"] = len(json.load(f))
+        
+        cfg["is_inited"] = True
 
 
 init_conf(GLOBAL_CONF)
