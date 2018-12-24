@@ -38,7 +38,7 @@ def init_conf(cfg):
         cfg['result_resolution_y'] = int(cfg['resolution_y'] * cfg['resolution_percentage'])/100
 
         with open(cfg["objlist_file"]) as f:
-            cfg["num_raw_classes"] = len(json.load(f))
+            cfg["num_raw_classes"] = len(json.load(f))+1
         
         cfg["is_inited"] = True
 

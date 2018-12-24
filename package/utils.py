@@ -306,8 +306,10 @@ def postprocessResult(cfg):
 
     np.savez_compressed(os.path.join(cfg["render_folder"], "masks.npz"), result)
 
-    dbg = np.zeros(shape=(result.shape[0], result.shape[1], 3))
-    dbg[..., :] = (result*colors[None,...]).max(axis=2)
+    dbg = np.zeros(shape=(result.shape[0], result.shape[1], result.shape[2], 3))
+    dbg[..., :] = result[..., None]
+    dbg *= colors[None, None, ...]
+    dbg = dbg.max(axis=2)
     for i, bbox in enumerate(boxes):
         cv2.rectangle(dbg, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 255, 255), 1)
 
