@@ -22,7 +22,7 @@ GLOBAL_CONF = {
     "result_resolution_y" : None,
     "resolution_percentage" : 15, 
     "samples" : 32,
-    "use_gpu": false,
+    "use_gpu": False,
 
     "num_raw_classes": None,
     #"total_classes": None,
