@@ -13,7 +13,7 @@ from config import GLOBAL_CONF
 
 
 import package.utils as utils
-from package.sample import SynthGen, ObjectModifier
+from package.sample import SynthGen
 
 from shelves.shelvesf import ShelvesFuncs
 
@@ -28,7 +28,7 @@ def main():
 
         print("Creating sampler")
         sampler = SynthGen(GLOBAL_CONF)
-        sampler.globalSetup(seed=i)
+        sampler.globalSetup(seed=i+GLOBAL_CONF["seed"])
         shelvesf = ShelvesFuncs(GLOBAL_CONF, sampler)
 
         print("Creating environment")
@@ -41,10 +41,10 @@ def main():
         print("Creating shelves")
         steps = np.random.randint(4, 7)
         heights=[np.random.uniform(1, 2) for i in range(steps)]
-        scale_d = [np.random.uniform(0.3, 0.7)]
+        scale_d = [np.random.uniform(1, 1.5)]
         for _ in range(steps):
             scale_d.append(np.random.uniform(0.3, scale_d[-1]))
-        scale_l = np.random.uniform(3.5, 4.5)
+        scale_l = np.random.uniform(2.5, 3.5)
         places = shelvesf.loadShelf(sampler.loader, heights=heights, scale_d=scale_d, scale_l=scale_l)
 
         print("Sampling objects")

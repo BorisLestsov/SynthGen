@@ -1,0 +1,78 @@
+[
+    {
+        "object": "wall",
+        "path": "wall1.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall2.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall3.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall4.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall5.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall6.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall7.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall8.jpg"
+    },
+    {
+        "object": "wall",
+        "path": "wall9.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor1.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor2.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor3.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor4.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor5.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor6.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor7.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor8.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor9.jpg"
+    },
+    {
+        "object": "floor",
+        "path": "floor10.jpg"
+    }
+    ]

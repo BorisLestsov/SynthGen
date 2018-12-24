@@ -9,7 +9,7 @@ from math import pi
 tau = 2*pi
 import numpy as np
 
-
+import json
 
 
 class ObjectLoader:
@@ -49,7 +49,11 @@ class ObjectLoader:
         return self.uniq_counter
 
 
-class ObjectSampler:
+class ObjectSampler2D:
+    """
+        Samples objects on the planes from the list of possible_locations
+    """
+
     def __init__(self, objlist_f, loader, modifier, augmenter, obj_cache=None):
         self.objlist = []
         self.loader = loader
@@ -57,9 +61,8 @@ class ObjectSampler:
         self.augmenter = augmenter
 
         #self.obj_cache = obj_cache if not obj_cache is None else {}
-        with open(objlist_f) as f:
-            for line in f:
-                self.objlist.append(line.split()[0])
+        with open(objlist_f, 'r') as f:
+            self.objlist = json.load(f)
 
     # def buildObjCache(self):
     #     for i, model_name in enumerate(objlist):
@@ -79,8 +82,9 @@ class ObjectSampler:
             if time_since > BREAK_TOL:
                 break
 
-            obj_idx = np.random.randint(1, len(self.objlist))
-            orig_obj = self.loader.load(self.objlist[obj_idx])
+            obj_idx = np.random.randint(0, len(self.objlist))
+            obj_prop = self.objlist[obj_idx]
+            orig_obj = self.loader.load(obj_prop["name"])
 
             w, d, h = orig_obj.dimensions
 
@@ -114,19 +118,26 @@ class ObjectSampler:
             marg_h = pt1[2]
 
             stackable = w > h/3 and d > h/3
-            times_h = 1 if not stackable else min(times_h, 3)
+            times_h = 1 if not obj_prop["stackable"] else min(times_h, 4)
+
+            transforms = []
+            #if obj_prop["rotatable_z"]:
+            #    transforms.append(self.augmenter.runtime_augment_rotate_flip)
+            transforms.append(self.augmenter.runtime_augment_rotate_small)
+            transforms.append(self.augmenter.runtime_augment_jitter)
 
             for i_w in range(int(times_w*coef_w)):
                 for i_h in range(int(times_h)):
                     for i_d in range(int(times_d)):
                         obj = orig_obj.copy()
 
-                        self.augmenter.runtime_augment_rot(orig_obj)
+                        for tr in transforms:
+                            obj = tr(obj)
 
                         self.modifier.scene.objects.link(obj)
                         obj = utils.moveObj(obj, (marg_w+i_w*w*1.1, marg_d+d*i_d*1.1, marg_h+h*i_h))
                         if i_d == 0:
-                            self.modifier.addObjectMaskOutput(obj, obj_idx)
+                            self.modifier.addObjectMaskOutput(obj, obj_prop["class"])
 
                 pt1[0] += w*1.1
 
@@ -140,9 +151,10 @@ class SynthGen:
     def __init__(self, cfg):
         self.cfg = cfg
         self.loader = ObjectLoader(cfg["assets_blend_path"], cfg["object_dir"])
-        self.modifier = ObjectModifier(cfg)
+        self.modifier = OutputRegistrator(cfg)
         self.augmenter = ObjectAugmenter(cfg)
-        self.sampler = ObjectSampler(cfg["objlist_file"], self.loader, self.modifier, self.augmenter)
+        self.sampler = ObjectSampler2D(cfg["objlist_file"], self.loader, self.modifier, self.augmenter)
+        self.text = TextureCreator(cfg)
         self.scene = bpy.data.scenes[self.cfg['scene_name']]
 
     def globalSetup(self, seed=None):
@@ -158,20 +170,41 @@ class SynthGen:
         if(not os.path.exists(self.cfg["render_folder"])):
             os.mkdir(render_folder)
 
-        # Render image
-        # for scene in bpy.data.scenes:
-        #     scene.cycles.device = 'GPU'
-        #     scene.cycles.samples = 16
+        if self.cfg["use_gpu"]:
+            for scene in bpy.data.scenes:
+                scene.cycles.device = 'GPU'
+                scene.render.tile_x = 256
+                scene.render.tile_y = 256
+
+            C = bpy.context
+            cycles_prefs = C.user_preferences.addons['cycles'].preferences
+
+            C.scene.render.use_overwrite = False
+            C.scene.render.use_placeholder = True
+            cycles_prefs.compute_device_type = "CUDA"
+
+            for device in cycles_prefs.devices:
+                device.use = True
+
 
 
         self.scene = bpy.data.scenes[self.cfg['scene_name']]
 
         self.scene.cycles.samples = self.cfg["samples"]
         self.scene.cycles.use_denoising = True
+        self.scene.cycles.caustics_reflective = False
+        self.scene.cycles.caustics_refractive = False
+
+
         self.scene.render.layers[0].cycles.use_denoising = True
         self.scene.render.resolution_x = self.cfg["resolution_x"]
         self.scene.render.resolution_y = self.cfg["resolution_y"]
         self.scene.render.resolution_percentage = self.cfg["resolution_percentage"]
+        
+        self.scene.view_settings.view_transform = "Filmic"
+        self.scene.view_settings.look = "Filmic - High Contrast"
+
+
 
         # self.cam_list = []
         # for ob in self.scene.objects:
@@ -193,7 +226,7 @@ class SynthGen:
 
 
 
-class ObjectModifier:
+class OutputRegistrator:
     def __init__(self, cfg):
         self.cfg = cfg
         self.scene = bpy.data.scenes[self.cfg['scene_name']]
@@ -217,6 +250,7 @@ class ObjectModifier:
         file_output_node = self.scene.node_tree.nodes.new("CompositorNodeOutputFile")
         file_output_node.name = "fileout_{}_{}".format(str(class_id), obj.pass_index)
         outpath = os.path.join(self.dest_dir, 'cam_{}_obj_{}_{}'.format(0, class_id, obj.pass_index))
+        #outpath = './mnttmp/cam_{}_obj_{}_{}'.format(0, class_id, obj.pass_index)
         file_output_node.base_path = outpath
         self.scene.node_tree.links.new(idmask_node.outputs["Alpha"], file_output_node.inputs["Image"])
 
@@ -234,12 +268,131 @@ class ObjectAugmenter:
     def __init__(self, cfg):
         self.cfg = cfg
 
-    def runtime_augment_rot(self, obj):
+    def runtime_augment_rotate_small(self, obj):
         rot_x = 0
         rot_y = 0
         rot_z = np.random.uniform(-pi/12, pi/12)
-        utils.rotateObj(obj, (rot_x, rot_y, rot_z))
+        utils.addObjRot(obj, (rot_x, rot_y, rot_z))
         return obj
 
+    def runtime_augment_rotate_flip(self, obj):
+        rot_x = 0
+        rot_y = 0
+        rotations_z = [0, pi]
+        rot_z = np.random.choice(rotations_z)
+        utils.addObjRot(obj, (rot_x, rot_y, rot_z))
+        return obj
+
+    def runtime_augment_jitter(self, obj, coef=0.05):
+            jit_x = np.random.uniform(-obj.dimensions.x*coef, obj.dimensions.x*coef)
+            jit_y = np.random.uniform(-obj.dimensions.y*coef, obj.dimensions.y*coef)
+            jit_z = 0
+            utils.moveObj(obj, (jit_x, jit_y, jit_z))
+            return obj
 
 
+
+
+class TextureCreator:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.texlist = []
+        self.tex_prefix = self.cfg["tex_prefix"]
+        self.counter = 0
+        
+        with open(self.cfg["texlist_file"], "r") as f:
+            self.texlist = json.load(f)
+
+
+    def getRandomTexWithProp(self, *args, **kwargs):
+        randind = np.random.permutation(len(self.texlist))
+
+        for prop, val in kwargs.items():
+            for i in randind:
+                if self.texlist[i][prop] == val:
+                    path = os.path.join(self.tex_prefix, self.texlist[i]["path"])
+                    return self.getTextMat(path)
+        print("No texture found with such prop!")
+
+
+    def getTextMat(self, img_path):
+        mat_name = "{}_{}".format(img_path, self.counter)
+        self.counter += 1
+        
+        mat = bpy.data.materials.new(mat_name)        
+        mat.use_nodes = True
+        nt = mat.node_tree
+        nodes = nt.nodes
+        links = nt.links
+
+        # clear
+        while(nodes): nodes.remove(nodes[0])
+
+        texcoor = nodes.new("ShaderNodeTexCoord")
+        mapping = nodes.new("ShaderNodeMapping")
+        texture = nodes.new("ShaderNodeTexImage")
+        diffuse = nodes.new("ShaderNodeBsdfDiffuse")
+        output  = nodes.new("ShaderNodeOutputMaterial")
+
+        img = bpy.data.images.load(img_path)
+        texture.image = img
+        texture.projection = "BOX"
+
+        links.new(mapping.inputs['Vector'],  texcoor.outputs['Object'],)
+        links.new(texture.inputs['Vector'],  mapping.outputs['Vector'])
+        links.new(diffuse.inputs['Color'],   texture.outputs['Color'])
+        links.new( output.inputs['Surface'], diffuse.outputs['BSDF'])
+        return mat
+
+
+    def applyMatToObjWithTex(self, obj, mat):
+        obj.data.materials.append(mat)
+        bpy.context.scene.objects.active = obj
+        obj.select = True
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action= 'DESELECT')
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.uv.smart_project()
+        return obj
+
+    def applyMatToObj(self, obj, mat):
+        obj.data.materials[0] = mat
+
+
+    def getLightingMat(self, strength=15.0, color=(1,1,1,1)):
+
+        mat = bpy.data.materials.new(name="{}_{}".format("LampMat", self.counter))
+        self.counter += 1
+        mat.use_nodes=True
+        nodes = mat.node_tree.nodes
+        for node in nodes:
+            nodes.remove(node)
+
+        node_emission = nodes.new(type='ShaderNodeEmission')
+        node_emission.inputs[0].default_value = color  # green RGBA
+        node_emission.inputs[1].default_value = strength # strength
+
+        node_output = nodes.new(type='ShaderNodeOutputMaterial')
+
+        links = mat.node_tree.links
+        link = links.new(node_emission.outputs[0], node_output.inputs[0])
+
+        return mat
+
+    def getDiffuseMat(self, color=(1,1,1,1)):
+        mat = bpy.data.materials.new(name="{}_{}".format("Diffuse", self.counter))
+        self.counter += 1
+        mat.use_nodes=True
+        nodes = mat.node_tree.nodes
+        for node in nodes:
+            nodes.remove(node)
+
+        node_diffuse = nodes.new(type='ShaderNodeBsdfDiffuse')
+        node_diffuse.inputs[0].default_value = color
+
+        node_output = nodes.new(type='ShaderNodeOutputMaterial')
+
+        links = mat.node_tree.links
+        link = links.new(node_diffuse.outputs[0], node_output.inputs[0])
+
+        return mat

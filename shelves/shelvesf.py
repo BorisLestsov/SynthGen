@@ -10,30 +10,13 @@ class ShelvesFuncs:
         self.cfg = cfg
         self.sampler = sampler
         self.loader = sampler.loader
+        self.text = sampler.text
         self.scene = bpy.data.scenes[self.cfg['scene_name']]
 
 
     def setupLighting(self):
 
-        mat = bpy.data.materials.new(name="LampMat")
-        mat.use_nodes=True
-        nodes = mat.node_tree.nodes
-        for node in nodes:
-            nodes.remove(node)
-
-        # create emission node
-        node_emission = nodes.new(type='ShaderNodeEmission')
-        node_emission.inputs[0].default_value = (1,1,1,1)  # green RGBA
-        node_emission.inputs[1].default_value = 15.0 # strength
-        node_emission.location = 0,0
-
-        # create output node
-        node_output = nodes.new(type='ShaderNodeOutputMaterial')   
-        node_output.location = 400,0
-
-        links = mat.node_tree.links
-        link = links.new(node_emission.outputs[0], node_output.inputs[0])
-
+        mat = self.text.getLightingMat()
 
         bpy.ops.mesh.primitive_plane_add()
         plane = bpy.context.active_object
@@ -54,9 +37,9 @@ class ShelvesFuncs:
 
 
     def setupCamera(self):
-        camera_loc_x = np.random.uniform(-0.5, 0.5)
-        camera_loc_y = np.random.uniform(-3.5, -2)
-        camera_loc_z = np.random.uniform(0.5, 2)
+        camera_loc_x = np.random.uniform(-1.5, 1.5)
+        camera_loc_y = np.random.uniform(-4.5, -2)
+        camera_loc_z = np.random.uniform(0.8, 2)
 
         camera_rot_x = np.random.uniform(pi/2-pi/12, pi/2+pi/36)
         #camera_rot_x = pi/2
@@ -66,42 +49,9 @@ class ShelvesFuncs:
         # Create camera
         bpy.ops.object.add(type='CAMERA', location=(camera_loc_x, camera_loc_y, camera_loc_z))
         self.cam = bpy.context.object
-        utils.rotateObj(self.cam, (camera_rot_x, camera_rot_y, camera_rot_z))
+        utils.setObjRot(self.cam, (camera_rot_x, camera_rot_y, camera_rot_z))
         # Make this the current camera
         bpy.context.scene.camera = self.cam
-
-
-    def getTextMat(self, img_path):
-        mat_name = img_path
-        
-        mat = bpy.data.materials.new(mat_name)        
-        mat.use_nodes = True
-        nt = mat.node_tree
-        nodes = nt.nodes
-        links = nt.links
-
-        # clear
-        while(nodes): nodes.remove(nodes[0])
-
-        output  = nodes.new("ShaderNodeOutputMaterial")
-        diffuse = nodes.new("ShaderNodeBsdfDiffuse")
-        texture = nodes.new("ShaderNodeTexImage")
-
-        texture.image = bpy.data.images.load(img_path)
-
-        links.new( output.inputs['Surface'], diffuse.outputs['BSDF'])
-        links.new(diffuse.inputs['Color'],   texture.outputs['Color'])
-        return mat
-
-    def applyTexToImage(self, obj, mat):
-        obj.data.materials.append(mat)
-        bpy.context.scene.objects.active = obj
-        obj.select = True
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action= 'DESELECT')
-        bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.ops.uv.smart_project()
-        return obj
 
 
     def setupEnv(self):
@@ -118,15 +68,12 @@ class ShelvesFuncs:
         plane = bpy.context.active_object
         utils.resizeObj(plane, (5, 5, 1))
 
-        path = "./tex/floor{}.jpg".format(np.random.randint(1, 6))
-        print(path)
-        mat = self.getTextMat(path)
-        self.applyTexToImage(plane, mat)
         
-        path = "./tex/wall{}.jpg".format(np.random.randint(1, 5))
-        print(path)
-        mat = self.getTextMat(path)
-        self.applyTexToImage(cube, mat)
+        mat = self.text.getRandomTexWithProp(object="floor")
+        self.text.applyMatToObjWithTex(plane, mat)
+        
+        mat = self.text.getRandomTexWithProp(object="wall")
+        self.text.applyMatToObjWithTex(cube, mat)
 
 
 
@@ -136,15 +83,19 @@ class ShelvesFuncs:
         shelf_top_name = "cgaxis_models_32_10_15.010" 
 
         places = []
+        
+        mat = self.text.getDiffuseMat(np.random.uniform(0.25, 1, size=4).tolist())
 
         i = 0
         base = loader.load(shelf_bot_name, link=False)
+        self.text.applyMatToObj(base, mat)
         utils.resizeObj(base, (scale_l,scale_d[i],1))
         i += 1
 
         prev_obj_top = None
         for h_coef in heights:   
             obj = loader.load(shelf_mid_name, link=False)
+            self.text.applyMatToObj(obj, mat)
             utils.resizeObj(obj, (scale_l, scale_d[i], h_coef))
             back_offset = obj.dimensions.z
             if not prev_obj_top is None:
@@ -159,12 +110,13 @@ class ShelvesFuncs:
             prev_obj_mid = obj
 
             obj = loader.load(shelf_top_name, link=False)
+            self.text.applyMatToObj(obj, mat)
             utils.resizeObj(obj, (scale_l,scale_d[i],1))
             obj.location.z += prev_obj_mid.location.z+prev_obj_mid.dimensions.y
             prev_obj_top = obj
 
             left_pt = [-obj.dimensions.z/2, -back_offset, obj.location.z]
-            right_pt = [obj.dimensions.z/2, -obj.dimensions.x, obj.location.z]
+            right_pt = [obj.dimensions.z/2, -obj.dimensions.x*0.9, obj.location.z]
 
             places[-1][1][2] += prev_obj_mid.dimensions[1]*0.7
             places.append([left_pt, right_pt])

@@ -248,9 +248,12 @@ def moveObjAbs(obj, vec):
     obj.location = mathutils.Vector(vec)
     return obj
 
-def rotateObj(obj, angles):
+def setObjRot(obj, angles):
     obj.rotation_euler = Euler((angles[0], angles[1], angles[2]), 'XYZ')
 
+def addObjRot(obj, angles):
+    old_rot = obj.rotation_euler
+    obj.rotation_euler = Euler((old_rot.x+angles[0], old_rot.y+angles[1], old_rot.z+angles[2]), 'XYZ')
 
 def resizeObj(obj, vals):
     obj.select=True
@@ -258,8 +261,7 @@ def resizeObj(obj, vals):
     obj.select=False
     return obj
 
-
-
+colors = None
 def postprocessResult(cfg):
 
     def find_bound(mask, axis, f):
@@ -279,6 +281,10 @@ def postprocessResult(cfg):
             objdict[path] = (int(class_idx), int(obj_idx))
 
     num_classes = cfg["num_raw_classes"]
+    if colors is None:
+        global colors
+        np.random.seed(0)
+        colors = np.random.uniform(0.25, 1., size=(num_classes, 3))
 
     result = cv2.imread(os.path.join(cfg["render_folder"], "res_cam_{}.png".format(0)))
     result = np.zeros(shape=(result.shape[0], result.shape[1], num_classes), dtype=np.uint8)
@@ -291,8 +297,8 @@ def postprocessResult(cfg):
         mask = cv2.imread(maskpath)[..., 0]
         if mask.any() != 0:
             bbox = (find_bound(mask, 0, min), find_bound(mask, 1, min), find_bound(mask, 0, max), find_bound(mask, 1, max))
-            if (bbox[2]-bbox[0]) < 5 or (bbox[3]-bbox[1]) < 5:
-                continue
+            #if (bbox[2]-bbox[0]) < 5 or (bbox[3]-bbox[1]) < 5:
+            #    continue
             result[bbox[1]:bbox[3], bbox[0]:bbox[2], class_idx] |= mask[bbox[1]:bbox[3], bbox[0]:bbox[2]]
             f.write('{} {} {} {} {} {}\n'.format(obj_idx, class_idx, *bbox))
             boxes.append(bbox)
@@ -300,7 +306,6 @@ def postprocessResult(cfg):
 
     np.savez_compressed(os.path.join(cfg["render_folder"], "masks.npz"), result)
 
-    colors = np.random.uniform(0.25, 1., size=(result.shape[-1], 3))
     dbg = np.zeros(shape=(result.shape[0], result.shape[1], result.shape[2], 3))
     dbg[..., :] = result[..., None]
     dbg *= colors[None, None, ...]
