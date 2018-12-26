@@ -137,7 +137,8 @@ class ObjectSampler2D:
                         self.modifier.scene.objects.link(obj)
                         obj = utils.moveObj(obj, (marg_w+i_w*w*1.1, marg_d+d*i_d*1.1, marg_h+h*i_h))
                         if i_d == 0:
-                            self.modifier.addObjectMaskOutput(obj, obj_prop["class"])
+                            print("add", try_i, obj_idx)
+                            self.modifier.addObjectMaskOutputNew(obj, obj_prop["class"])
 
                 pt1[0] += w*1.1
 
@@ -166,21 +167,22 @@ class SynthGen:
         pass
 
 
-    def setupRenderOptions(self):
+    def setupRenderOptions(self, scene=None):
+        if scene is None:
+            scene = self.scene
+
         if(not os.path.exists(self.cfg["render_folder"])):
             os.mkdir(render_folder)
 
         if self.cfg["use_gpu"]:
-            for scene in bpy.data.scenes:
-                scene.cycles.device = 'GPU'
-                scene.render.tile_x = 256
-                scene.render.tile_y = 256
+            scene.cycles.device = 'GPU'
+            scene.render.tile_x = 256
+            scene.render.tile_y = 256
 
-            C = bpy.context
-            cycles_prefs = C.user_preferences.addons['cycles'].preferences
+            cycles_prefs = bpy.context.user_preferences.addons['cycles'].preferences
 
-            C.scene.render.use_overwrite = False
-            C.scene.render.use_placeholder = True
+            scene.render.use_overwrite = False
+            scene.render.use_placeholder = True
             cycles_prefs.compute_device_type = "CUDA"
 
             for device in cycles_prefs.devices:
@@ -188,21 +190,19 @@ class SynthGen:
 
 
 
-        self.scene = bpy.data.scenes[self.cfg['scene_name']]
-
-        self.scene.cycles.samples = self.cfg["samples"]
-        self.scene.cycles.use_denoising = True
-        self.scene.cycles.caustics_reflective = False
-        self.scene.cycles.caustics_refractive = False
+        scene.cycles.samples = self.cfg["samples"]
+        scene.cycles.use_denoising = True
+        scene.cycles.caustics_reflective = False
+        scene.cycles.caustics_refractive = False
 
 
-        self.scene.render.layers[0].cycles.use_denoising = True
-        self.scene.render.resolution_x = self.cfg["resolution_x"]
-        self.scene.render.resolution_y = self.cfg["resolution_y"]
-        self.scene.render.resolution_percentage = self.cfg["resolution_percentage"]
+        scene.render.layers[0].cycles.use_denoising = True
+        scene.render.resolution_x = self.cfg["resolution_x"]
+        scene.render.resolution_y = self.cfg["resolution_y"]
+        scene.render.resolution_percentage = self.cfg["resolution_percentage"]
         
-        self.scene.view_settings.view_transform = "Filmic"
-        self.scene.view_settings.look = "Filmic - High Contrast"
+        scene.view_settings.view_transform = "Filmic"
+        scene.view_settings.look = "Filmic - High Contrast"
 
 
 
@@ -214,16 +214,24 @@ class SynthGen:
         #         self.cam_list.append(ob)
 
 
-    def renderScene(self):
-        self.scene.render.filepath = os.path.join(self.cfg["render_folder"], 'res_cam_{}.png'.format(0))
+    def renderScene(self, scene=None):
+        if scene is None:
+            scene = self.scene
+        #scene.render.filepath = os.path.join(self.cfg["render_folder"], 'res_cam_{}.png'.format(0))
         bpy.ops.render.render(write_still=True)
         # for i, cam in enumerate(self.cam_list):
         #     self.scene.camera = cam
         #     self.rnd.filepath = os.path.join(self.cfg["render_folder"], 'res_cam_{}.png'.format(i))
         #     bpy.ops.render.render(write_still=True)
 
+    def addNewScene(self, name, type):
+        old_scene = bpy.context.screen.scene
+        bpy.ops.scene.new(type=type)     
+        bpy.context.scene.name = name
+        bpy.context.screen.scene = old_scene
 
-
+    def chooseScene(self, name):
+        bpy.context.screen.scene = bpy.data.scenes[name]
 
 
 class OutputRegistrator:
@@ -235,8 +243,11 @@ class OutputRegistrator:
         self.outf = open(os.path.join(self.dest_dir, 'objects.txt'), 'w')
 
         self.scene.render.layers["RenderLayer"].use_pass_object_index = True
+        self.scene.render.layers["RenderLayer"].use_pass_z = False
         self.scene.use_nodes = True
         self.renderlayers_node = self.scene.node_tree.nodes["Render Layers"]
+
+        self.objects = []
 
     def addObjectMaskOutput(self, obj, class_id):
 
@@ -258,6 +269,19 @@ class OutputRegistrator:
         self.outf.flush()
 
         self.cur_pass += 1
+
+    def addObjectMaskOutputNew(self, obj, class_id):
+        
+        obj.pass_index = self.cur_pass
+        self.objects.append(obj)
+
+        outpath = os.path.join(self.dest_dir, 'cam_{}_obj_{}_{}'.format(0, class_id, obj.pass_index))
+        self.outf.write('{} {} {}\n'.format(outpath, class_id, obj.pass_index))
+        self.outf.flush()
+
+        self.cur_pass += 1
+
+
 
     def __del__(self):
         self.outf.close()
@@ -396,3 +420,30 @@ class TextureCreator:
         link = links.new(node_diffuse.outputs[0], node_output.inputs[0])
 
         return mat
+
+    def getClownMat(self):
+
+        mat_name = "clown"
+        
+        mat = bpy.data.materials.new(mat_name)        
+        mat.use_nodes = True
+        nt = mat.node_tree
+        nodes = nt.nodes
+        links = nt.links
+
+        # clear
+        while(nodes): nodes.remove(nodes[0])
+
+        info = nodes.new("ShaderNodeObjectInfo")
+        hue = nodes.new("ShaderNodeHueSaturation")
+        emis = nodes.new("ShaderNodeEmission")
+        output  = nodes.new("ShaderNodeOutputMaterial")
+
+        hue.inputs[4].default_value = (1,0,0,1)
+
+        links.new(hue.inputs['Value'],  info.outputs['Object Index'],)
+        links.new(emis.inputs['Color'],  hue.outputs['Color'])
+        links.new(output.inputs['Surface'],   emis.outputs['Emission'])
+
+        return mat
+

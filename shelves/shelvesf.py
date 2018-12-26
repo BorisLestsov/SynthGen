@@ -56,9 +56,6 @@ class ShelvesFuncs:
 
     def setupEnv(self):
 
-        # Remove all elements
-        utils.removeAll(self.scene)
-
         bpy.ops.mesh.primitive_cube_add()
         cube = bpy.context.active_object
         utils.resizeObj(cube, (5, 5, 2.5))

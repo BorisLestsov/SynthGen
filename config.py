@@ -2,7 +2,7 @@ import sys, os
 import json
 
 GLOBAL_CONF = {
-    "num_samples": 5,
+    "num_samples": 2,
     "seed": 0,
 
     "scene_save_path": "./scenes/main.blend",
@@ -17,6 +17,7 @@ GLOBAL_CONF = {
     "tex_prefix": "./tex/",
 
     "scene_name" : "Scene",
+    "scene_name_masks" : "SceneMasks",
     "resolution_x" : 1080,
     "resolution_y" : 1920,
     "result_resolution_x" : None,
@@ -34,8 +35,8 @@ GLOBAL_CONF = {
 
 def init_conf(cfg):
     if not cfg["is_inited"]:
-        cfg['result_resolution_x'] = int(cfg['resolution_x'] * cfg['resolution_percentage'])/100
-        cfg['result_resolution_y'] = int(cfg['resolution_y'] * cfg['resolution_percentage'])/100
+        cfg['result_resolution_x'] = int(cfg['resolution_x'] * cfg['resolution_percentage']/100)
+        cfg['result_resolution_y'] = int(cfg['resolution_y'] * cfg['resolution_percentage']/100)
 
         with open(cfg["objlist_file"]) as f:
             cfg["num_raw_classes"] = len(json.load(f))+1
