@@ -22,9 +22,9 @@ GLOBAL_CONF = {
     "resolution_y" : 1920,
     "result_resolution_x" : None,
     "result_resolution_y" : None,
-    "resolution_percentage" : 100, 
+    "resolution_percentage" : 15, 
     "samples" : 32,
-    "use_gpu": True,
+    "use_gpu": False,
 
     "num_raw_classes": None,
     #"total_classes": None,

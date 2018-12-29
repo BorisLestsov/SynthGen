@@ -73,6 +73,7 @@ def main():
 
         print("Sampling objects")
         sampler.sampler.sampleObjects(places)
+        #sampler.sampler.printStats()
 
 
         print("Rendering scene")
@@ -133,6 +134,8 @@ def main():
 
         new_scene.render.image_settings.file_format = "OPEN_EXR"
         new_scene.render.filepath = os.path.join(GLOBAL_CONF["render_folder"], 'res_cam_{}_mask.exr'.format(0))
+        
+        new_scene.cycles.samples = 1
 
         sampler.renderScene(new_scene)
         

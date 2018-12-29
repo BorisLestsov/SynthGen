@@ -12,6 +12,10 @@ import numpy as np
 import json
 
 
+# from line_profiler import LineProfiler  
+# profile = LineProfiler()
+
+
 class ObjectLoader:
     def __init__(self, lib_path, directory):
         self.lib_path = lib_path
@@ -71,11 +75,20 @@ class ObjectSampler2D:
     #         self.obj_cache[model_name]
 
 
+
+    #@profile
     def sampleObjects(self, possible_locations):
         NUM_TRIES = 100
         BREAK_TOL = 20
 
         num_placed = {i:np.random.randint(5, 10) for i in range(len(possible_locations))}
+
+
+        self.cached_objects = [None for _ in range(len(self.objlist))]
+        for i, obj_prop in enumerate(self.objlist):
+            self.cached_objects[i] = self.loader.load(obj_prop["name"])
+            utils.moveObjAbs(self.cached_objects[i], (0, 0, -3))
+
 
         time_since = 0
         for try_i in range(NUM_TRIES):
@@ -84,7 +97,8 @@ class ObjectSampler2D:
 
             obj_idx = np.random.randint(0, len(self.objlist))
             obj_prop = self.objlist[obj_idx]
-            orig_obj = self.loader.load(obj_prop["name"])
+            #orig_obj = self.loader.load(obj_prop["name"])
+            orig_obj = self.cached_objects[obj_idx].copy()
 
             w, d, h = orig_obj.dimensions
 
@@ -126,6 +140,7 @@ class ObjectSampler2D:
             transforms.append(self.augmenter.runtime_augment_rotate_small)
             transforms.append(self.augmenter.runtime_augment_jitter)
 
+            #print(try_i, obj_idx)
             for i_w in range(int(times_w*coef_w)):
                 for i_h in range(int(times_h)):
                     for i_d in range(int(times_d)):
@@ -135,16 +150,17 @@ class ObjectSampler2D:
                             obj = tr(obj)
 
                         self.modifier.scene.objects.link(obj)
-                        obj = utils.moveObj(obj, (marg_w+i_w*w*1.1, marg_d+d*i_d*1.1, marg_h+h*i_h))
+                        obj = utils.moveObjAbs(obj, (marg_w+i_w*w*1.1, marg_d+d*i_d*1.1, marg_h+h*i_h))
                         if i_d == 0:
-                            print("add", try_i, obj_idx)
                             self.modifier.addObjectMaskOutputNew(obj, obj_prop["class"])
 
                 pt1[0] += w*1.1
 
             bpy.data.objects.remove(orig_obj, True)
 
-
+    # def printStats(self):
+    #     print("STATS")
+    #     profile.print_stats()  
 
 
 class SynthGen:
@@ -311,7 +327,7 @@ class ObjectAugmenter:
             jit_x = np.random.uniform(-obj.dimensions.x*coef, obj.dimensions.x*coef)
             jit_y = np.random.uniform(-obj.dimensions.y*coef, obj.dimensions.y*coef)
             jit_z = 0
-            utils.moveObj(obj, (jit_x, jit_y, jit_z))
+            utils.shiftObj(obj, (jit_x, jit_y, jit_z))
             return obj
 
 

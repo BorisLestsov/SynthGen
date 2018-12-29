@@ -21,17 +21,17 @@ class ShelvesFuncs:
         bpy.ops.mesh.primitive_plane_add()
         plane = bpy.context.active_object
         utils.resizeObj(plane, (0.1, 2, 1))
-        utils.moveObj(plane, (0, 0, 4))
+        utils.moveObjAbs(plane, (0, 0, 4))
 
         plane.data.materials.append(mat)
 
         for i in range(3):
             obj = plane.copy()
             self.scene.objects.link(obj)
-            utils.moveObj(obj, ( plane.dimensions.x*i*5, 0, 0))
+            utils.moveObjAbs(obj, ( plane.dimensions.x*i*5, 0, 0))
             obj = plane.copy()
             self.scene.objects.link(obj)
-            utils.moveObj(obj, (-plane.dimensions.x*i*5, 0, 0))
+            utils.moveObjAbs(obj, (-plane.dimensions.x*i*5, 0, 0))
 
 
 
@@ -59,7 +59,7 @@ class ShelvesFuncs:
         bpy.ops.mesh.primitive_cube_add()
         cube = bpy.context.active_object
         utils.resizeObj(cube, (5, 5, 2.5))
-        utils.moveObj(cube, (0, 0, cube.dimensions.z/2-0.001))
+        utils.moveObjAbs(cube, (0, 0, cube.dimensions.z/2-0.001))
 
         bpy.ops.mesh.primitive_plane_add()
         plane = bpy.context.active_object
