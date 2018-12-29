@@ -16,7 +16,8 @@ class ShelvesFuncs:
 
     def setupLighting(self):
 
-        mat = self.text.getLightingMat()
+        mat = self.text.getLightingMat(strength=np.random.randint(12, 30), 
+                                       color=np.random.uniform(0.8, 1, size=(3,)).tolist()+[1])
 
         bpy.ops.mesh.primitive_plane_add()
         plane = bpy.context.active_object
@@ -28,17 +29,17 @@ class ShelvesFuncs:
         for i in range(3):
             obj = plane.copy()
             self.scene.objects.link(obj)
-            utils.moveObjAbs(obj, ( plane.dimensions.x*i*5, 0, 0))
+            utils.shiftObj(obj, ( plane.dimensions.x*i*5, 0, 0))
             obj = plane.copy()
             self.scene.objects.link(obj)
-            utils.moveObjAbs(obj, (-plane.dimensions.x*i*5, 0, 0))
+            utils.shiftObj(obj, (-plane.dimensions.x*i*5, 0, 0))
 
 
 
 
     def setupCamera(self):
         camera_loc_x = np.random.uniform(-1.5, 1.5)
-        camera_loc_y = np.random.uniform(-4.5, -2)
+        camera_loc_y = np.random.uniform(-4.95, -2)
         camera_loc_z = np.random.uniform(0.8, 2)
 
         camera_rot_x = np.random.uniform(pi/2-pi/12, pi/2+pi/36)

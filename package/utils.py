@@ -356,7 +356,7 @@ def postprocessResultNew(cfg):
     for path, (class_idx, obj_idx) in objdict.items():
         tmp_mask = mask==obj_idx
         if tmp_mask.any() != 0:
-            cv2.imwrite("tmp/dbg{}.png".format(obj_idx), tmp_mask.astype(np.uint8)*255)
+            #cv2.imwrite("tmp/dbg{}.png".format(obj_idx), tmp_mask.astype(np.uint8)*255)
             bbox = (find_bound(tmp_mask, 0, min), find_bound(tmp_mask, 1, min), find_bound(tmp_mask, 0, max), find_bound(tmp_mask, 1, max))
             #if (bbox[2]-bbox[0]) < 5 or (bbox[3]-bbox[1]) < 5:
             #    continue

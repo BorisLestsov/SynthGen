@@ -211,6 +211,9 @@ class SynthGen:
         scene.cycles.caustics_reflective = False
         scene.cycles.caustics_refractive = False
 
+        scene.cycles.min_bounces = 0
+        scene.cycles.max_bounces = 3
+
 
         scene.render.layers[0].cycles.use_denoising = True
         scene.render.resolution_x = self.cfg["resolution_x"]
