@@ -11,11 +11,13 @@ sys.path.append(cwd)
 
 from config import GLOBAL_CONF
 
+import sys
 
 import package.utils as utils
 from package.sample import SynthGen
 
 from shelves.shelvesf import ShelvesFuncs
+
 
 import numpy as np
 import cv2
@@ -23,7 +25,6 @@ import cv2
 
 
 def main():
-
 
     print("Creating new scene")
     old_scene = bpy.context.screen.scene

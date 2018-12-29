@@ -341,6 +341,7 @@ def postprocessResultNew(cfg):
 
     mask = cv2.imread(os.path.join(cfg["render_folder"], "res_cam_{}_mask.exr".format(0)), 
                       cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)[:,:,2]
+    
 
     mask[np.modf(mask)[0]>(0+0.01)]=0
     #mask[np.modf(mask)[0]<(1-0.1)]=0
@@ -373,7 +374,7 @@ def postprocessResultNew(cfg):
         cv2.rectangle(dbg, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 255, 255), 1)
 
     print(np.unique(dbg), dbg.dtype)
-    cv2.imwrite(os.path.join(cfg["render_folder"], "mask_res.png"), dbg.astype(np.uint8))
+    cv2.imwrite(os.path.join(cfg["render_folder"], "mask_res.tiff"), dbg.astype(np.uint8))
 
 
 
@@ -387,7 +388,7 @@ def copyResultToOutputFolder(cfg, cur_out_dir):
     command = "mkdir -p {}".format(dest_dir)
     exec_command(command)
 
-    command = 'cp {} {} {} {} {} -t {}'.format(os.path.join(cfg["render_folder"], "mask_res.png"),
+    command = 'cp {} {} {} {} {} -t {}'.format(os.path.join(cfg["render_folder"], "mask_res.tiff"),
                                          os.path.join(cfg["render_folder"], "masks.npz"),
                                          os.path.join(cfg["render_folder"], "box_coords.txt"),
                                          os.path.join(cfg["render_folder"], "objects.txt"),
