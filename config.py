@@ -2,10 +2,10 @@ import sys, os
 import json
 
 GLOBAL_CONF = {
-    "num_samples": 2,
+    "num_samples": 5,
     "seed": 0,
 
-    "scene_save_path": "./scenes/main.blend",
+    "scene_save_path": "./result/main.blend",
     "assets_blend_path" : "./assets/model_assets.blend",
     "object_dir" : "/Object/",
     "render_folder": os.path.join('.', 'result'),

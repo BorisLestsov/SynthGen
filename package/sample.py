@@ -53,27 +53,36 @@ class ObjectLoader:
         return self.uniq_counter
 
 
+class ObjCache:
+    def __init__(self, json_path, loader):
+        self.json_path = json_path
+        self.loader = loader
+
+        with open(json_path, 'r') as f:
+            self.objlist = json.load(f)
+        self.cached_objects = None
+
+
+    def buildCache(self):
+        self.cached_objects = [None for _ in range(len(self.objlist))]
+        for i, obj_prop in enumerate(self.objlist):
+            self.cached_objects[i] = self.loader.load(obj_prop["name"])
+            utils.moveObjAbs(self.cached_objects[i], (0, 0, -3))
+
+
+
 class ObjectSampler2D:
     """
         Samples objects on the planes from the list of possible_locations
     """
 
-    def __init__(self, objlist_f, loader, modifier, augmenter, obj_cache=None):
+    def __init__(self, obj_cache, loader, modifier, augmenter):
         self.objlist = []
         self.loader = loader
         self.modifier = modifier
         self.augmenter = augmenter
 
-        #self.obj_cache = obj_cache if not obj_cache is None else {}
-        with open(objlist_f, 'r') as f:
-            self.objlist = json.load(f)
-
-    # def buildObjCache(self):
-    #     for i, model_name in enumerate(objlist):
-    #         obj = self.loader.load(objlist[obj_idx])
-    #         self.obj_cache[model_name] = {}
-    #         self.obj_cache[model_name]
-
+        self.obj_cache = obj_cache
 
 
     #@profile
@@ -83,22 +92,14 @@ class ObjectSampler2D:
 
         num_placed = {i:np.random.randint(5, 10) for i in range(len(possible_locations))}
 
-
-        self.cached_objects = [None for _ in range(len(self.objlist))]
-        for i, obj_prop in enumerate(self.objlist):
-            self.cached_objects[i] = self.loader.load(obj_prop["name"])
-            utils.moveObjAbs(self.cached_objects[i], (0, 0, -3))
-
-
         time_since = 0
         for try_i in range(NUM_TRIES):
             if time_since > BREAK_TOL:
                 break
 
-            obj_idx = np.random.randint(0, len(self.objlist))
-            obj_prop = self.objlist[obj_idx]
-            #orig_obj = self.loader.load(obj_prop["name"])
-            orig_obj = self.cached_objects[obj_idx].copy()
+            obj_idx = np.random.randint(0, len(self.obj_cache.objlist))
+            obj_prop = self.obj_cache.objlist[obj_idx]
+            orig_obj = self.obj_cache.cached_objects[obj_idx].copy()
 
             w, d, h = orig_obj.dimensions
 
@@ -165,12 +166,12 @@ class ObjectSampler2D:
 
 class SynthGen:
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, cache, loader):
         self.cfg = cfg
-        self.loader = ObjectLoader(cfg["assets_blend_path"], cfg["object_dir"])
+        self.loader = loader
         self.modifier = OutputRegistrator(cfg)
         self.augmenter = ObjectAugmenter(cfg)
-        self.sampler = ObjectSampler2D(cfg["objlist_file"], self.loader, self.modifier, self.augmenter)
+        self.sampler = ObjectSampler2D(cache, self.loader, self.modifier, self.augmenter)
         self.text = TextureCreator(cfg)
         self.scene = bpy.data.scenes[self.cfg['scene_name']]
 
@@ -211,8 +212,8 @@ class SynthGen:
         scene.cycles.caustics_reflective = False
         scene.cycles.caustics_refractive = False
 
-        scene.cycles.min_bounces = 0
-        scene.cycles.max_bounces = 3
+        scene.cycles.min_bounces = 3
+        scene.cycles.max_bounces = 8
 
 
         scene.render.layers[0].cycles.use_denoising = True

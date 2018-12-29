@@ -147,6 +147,24 @@ def removeAll(scene, type=None):
             nodes.remove(node)
     
 
+def removeAllNew(scene, type=None):
+    # Possible type: ‘MESH’, ‘CURVE’, ‘SURFACE’, ‘META’, ‘FONT’, ‘ARMATURE’, ‘LATTICE’, ‘EMPTY’, ‘CAMERA’, ‘LAMP’
+    for object_ in scene.objects:
+        bpy.data.objects.remove(object_, True)
+
+    # for o in bpy.data.objects:
+    #     o.select = True
+    # bpy.ops.object.delete()
+
+
+    scene.node_tree
+    scene.use_nodes=True
+    nodes = scene.node_tree.nodes
+    for node in nodes:
+        if not node.name in ["Render Layers", "Composite"]:
+            nodes.remove(node)
+
+
 
 def simpleMaterial(diffuse_color):
     mat = bpy.data.materials.new('Material')
@@ -315,6 +333,7 @@ def postprocessResult(cfg):
     cv2.imwrite(os.path.join(cfg["render_folder"], "mask_res.png"), dbg)
 
 
+zero_img = np.zeros(shape=(10, 10, 3))
 def postprocessResultNew(cfg):
 
     def find_bound(mask, axis, f):
@@ -367,16 +386,21 @@ def postprocessResultNew(cfg):
 
     np.savez_compressed(os.path.join(cfg["render_folder"], "masks.npz"), result)
 
-    dbg = np.zeros(shape=(result.shape[0], result.shape[1], result.shape[2], 3))
-    dbg[..., :] = result[..., None]
-    dbg *= colors[None, None, ...]*255
-    dbg = dbg.max(axis=2)
+
+    dbg = np.zeros(shape=(result.shape[0], result.shape[1], 3))
+    for i in range( num_classes):
+        dbg[result[:, :, i]!=0] = colors[i]*255
+
+    # vectorized, but slow method, lol
+    # dbg = np.zeros(shape=(result.shape[0], result.shape[1], result.shape[2], 3))
+    # dbg[..., :] = result[..., None]
+    # dbg *= colors[None, None, ...]*255
+    # dbg = dbg.max(axis=2)
+
     for i, bbox in enumerate(boxes):
         cv2.rectangle(dbg, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 255, 255), 1)
 
-    print(np.unique(dbg), dbg.dtype)
     cv2.imwrite(os.path.join(cfg["render_folder"], "mask_res.tiff"), dbg.astype(np.uint8))
-
 
 
 def exec_command(command, need_print=True):
@@ -389,10 +413,11 @@ def copyResultToOutputFolder(cfg, cur_out_dir):
     command = "mkdir -p {}".format(dest_dir)
     exec_command(command)
 
-    command = 'cp {} {} {} {} {} {} -t {}'.format(os.path.join(cfg["render_folder"], "mask_res.tiff"),
+    command = 'cp {} {} {} {} {} {} {} -t {}'.format(os.path.join(cfg["render_folder"], "mask_res.tiff"),
                                          os.path.join(cfg["render_folder"], "masks.npz"),
                                          os.path.join(cfg["render_folder"], "box_coords.txt"),
                                          os.path.join(cfg["render_folder"], "objects.txt"),
+                                         os.path.join(cfg["render_folder"], "main.blend"),
                                          os.path.join(cfg["render_folder"], "res_cam_{}_mask.exr".format(0)),
                                          os.path.join(cfg["render_folder"], "res_cam_{}.png".format(0)), 
                                          dest_dir)

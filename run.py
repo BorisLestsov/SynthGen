@@ -14,7 +14,7 @@ from config import GLOBAL_CONF
 import sys
 
 import package.utils as utils
-from package.sample import SynthGen
+from package.sample import SynthGen, ObjCache, ObjectLoader
 
 from shelves.shelvesf import ShelvesFuncs
 
@@ -25,6 +25,19 @@ import cv2
 
 
 def main():
+
+    loader = ObjectLoader(GLOBAL_CONF["assets_blend_path"], GLOBAL_CONF["object_dir"])
+
+    print("Creating cache scene")
+    tmp_scene = bpy.context.screen.scene
+    bpy.ops.scene.new(type="EMPTY")     
+    bpy.context.scene.name = "scene_cache"
+
+    cache = ObjCache(GLOBAL_CONF["objlist_file"], loader)
+    cache.buildCache()
+    bpy.context.screen.scene = tmp_scene
+
+
 
     print("Creating new scene")
     old_scene = bpy.context.screen.scene
@@ -42,16 +55,16 @@ def main():
         utils.clearRenderFolder(GLOBAL_CONF)
 
         print("Creating sampler")
-        sampler = SynthGen(GLOBAL_CONF)
+        sampler = SynthGen(GLOBAL_CONF, cache, loader)
         sampler.globalSetup(seed=i+GLOBAL_CONF["seed"])
         shelvesf = ShelvesFuncs(GLOBAL_CONF, sampler)
 
         print("Clearing Scenes")
         # Remove all elements
         bpy.context.screen.scene = old_scene
-        utils.removeAll(old_scene)
+        utils.removeAllNew(old_scene)
         bpy.context.screen.scene = new_scene
-        utils.removeAll(new_scene)
+        utils.removeAllNew(new_scene)
         bpy.context.screen.scene = old_scene
 
 
@@ -97,34 +110,6 @@ def main():
         new_scene.render.layers["RenderLayer"].material_override = clownmat
     
 
-
-
-
-        # bpy.context.scene.use_nodes = True
-        # tree = bpy.context.scene.node_tree
-        # links = tree.links
-          
-        # clear default nodes
-        # for n in tree.nodes:
-        #     if n.name != "Composite":
-        #         tree.nodes.remove(n)
-        #     else:
-        #         comp_node = n
-
-          
-        # create input render layer node
-        # rl = tree.nodes.new('CompositorNodeRLayers')      
-        # rl.location = 185,285
-         
-        # # create output node
-        # v = tree.nodes.new('CompositorNodeViewer')   
-        # v.location = 750,210
-        # v.use_alpha = False
-         
-        # # Links
-        # links.new(rl.outputs[0], v.inputs[0])  # link Image output to Viewer input
-        # links.new(rl.outputs[0], comp_node.inputs[0])
-        
         sampler.setupRenderOptions(new_scene)
         new_scene.cycles.pixel_filter_type = "GAUSSIAN"
         new_scene.cycles.filter_width = 0.01
@@ -141,26 +126,13 @@ def main():
         
         bpy.context.screen.scene = old_scene
 
-        # # get viewer pixels
-        # pixels = bpy.data.images['Viewer Node'].pixels
-        # print(len(pixels)) # size is always width * height * 4 (rgba)
-         
-        # # copy buffer to numpy array for faster manipulation
-        # arr = np.array(pixels[:])
-        # total = GLOBAL_CONF['result_resolution_y'] * GLOBAL_CONF['result_resolution_x'] * 4
-        # arr = arr[:total].reshape(GLOBAL_CONF['result_resolution_y'], GLOBAL_CONF['result_resolution_x'], 4)
-        # print(np.unique(arr))
-
-        # cv2.imwrite("res.png", arr[:,:,:-1])
-
 
         print("Postprocessing result")
         utils.postprocessResultNew(GLOBAL_CONF)
-        print("Copying result to output folder")
-        utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i))
-
         print("Saving blend file")
         bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
+        print("Copying result to output folder")
+        utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i))
 
     #utils.clearRenderFolder(GLOBAL_CONF)
 
