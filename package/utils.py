@@ -16,6 +16,7 @@ import cv2
 import numpy as np
 
 
+
 def removeObject(obj):
     if obj.type == 'MESH':
         if obj.data.name in bpy.data.meshes:
@@ -256,6 +257,42 @@ def bmeshToObject(bm, name='Object'):
 # My own utils #
 ################
 
+import logging
+import sys 
+import datetime
+
+
+class TimeFilter(logging.Filter):
+
+    def filter(self, record):
+        try:
+          last = self.last
+        except AttributeError:
+          last = record.relativeCreated
+
+        delta = datetime.datetime.fromtimestamp(record.relativeCreated/1000.0) - datetime.datetime.fromtimestamp(last/1000.0)
+
+        record.relative = '{0:.2f}'.format(delta.seconds + delta.microseconds/1000000.0)
+
+        self.last = record.relativeCreated
+        return True
+
+def setup_custom_logger(name):
+    formatter = logging.Formatter(fmt='%(asctime)s (%(relative)ss) %(levelname)-8s %(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    handler = logging.FileHandler('log.txt', mode='w')
+    handler.setFormatter(formatter)
+    screen_handler = logging.StreamHandler(stream=sys.stdout)
+    screen_handler.setFormatter(formatter)
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    logger.addHandler(screen_handler)
+    [hndl.addFilter(TimeFilter()) for hndl in logger.handlers]
+    return logger
+
+
+
 
 def shiftObj(obj, vec):
     obj.location += mathutils.Vector(vec)
@@ -310,7 +347,6 @@ def postprocessResult(cfg):
     f = open(os.path.join(cfg["render_folder"], "box_coords.txt"), 'w')
     for path, (class_idx, obj_idx) in objdict.items():
         maskpath = os.path.join(path, "Image0001.png")
-        print(maskpath)
         mask = cv2.imread(maskpath)[..., 0]
         if mask.any() != 0:
             bbox = (find_bound(mask, 0, min), find_bound(mask, 1, min), find_bound(mask, 0, max), find_bound(mask, 1, max))
@@ -361,7 +397,6 @@ def postprocessResultNew(cfg):
     mask = cv2.imread(os.path.join(cfg["render_folder"], "res_cam_{}_mask.exr".format(0)), 
                       cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)[:,:,2]
 
-    print(np.unique(mask))
     
     residual = np.modf(mask)[0]
     mask[(residual>(0+0.001)) & (residual < (1-0.001))]=0

@@ -26,9 +26,12 @@ import cv2
 
 def main():
 
+    logger = utils.setup_custom_logger(GLOBAL_CONF["logger_name"])
+    logger.info('Creating object loader')
+
     loader = ObjectLoader(GLOBAL_CONF["assets_blend_path"], GLOBAL_CONF["object_dir"])
 
-    print("Creating cache scene")
+    logger.info("Creating cache scene")
     tmp_scene = bpy.context.screen.scene
     bpy.ops.scene.new(type="EMPTY")     
     bpy.context.scene.name = "scene_cache"
@@ -39,27 +42,29 @@ def main():
 
 
 
-    print("Creating new scene")
+    logger.info("Creating mask scene")
     old_scene = bpy.context.screen.scene
     bpy.ops.scene.new(type="EMPTY")     
     bpy.context.scene.name = GLOBAL_CONF["scene_name_masks"]
     bpy.context.screen.scene = old_scene
 
+    logger.info("Creating clownmat")
     new_scene = bpy.data.scenes[GLOBAL_CONF["scene_name_masks"]]
+    clownmat = None
 
 
     for i in range(GLOBAL_CONF['num_samples']):
         bpy.context.screen.scene = old_scene
 
-        print("Clearing render folder")
+        logger.info("Clearing render folder")
         utils.clearRenderFolder(GLOBAL_CONF)
 
-        print("Creating sampler")
+        logger.info("Creating sampler")
         sampler = SynthGen(GLOBAL_CONF, cache, loader)
         sampler.globalSetup(seed=i+GLOBAL_CONF["seed"])
         shelvesf = ShelvesFuncs(GLOBAL_CONF, sampler)
 
-        print("Clearing Scenes")
+        logger.info("Clearing Scenes")
         # Remove all elements
         bpy.context.screen.scene = old_scene
         utils.removeAllNew(old_scene)
@@ -68,14 +73,14 @@ def main():
         bpy.context.screen.scene = old_scene
 
 
-        print("Creating environment")
+        logger.info("Creating environment")
         shelvesf.setupEnv()
-        print("Creating camera")
+        logger.info("Creating camera")
         shelvesf.setupCamera()
-        print("Creating lighting")
+        logger.info("Creating lighting")
         shelvesf.setupLighting()
 
-        print("Creating shelves")
+        logger.info("Creating shelves")
         steps = np.random.randint(4, 7)
         heights=[np.random.uniform(1, 2) for i in range(steps)]
         scale_d = [np.random.uniform(1, 1.5)]
@@ -84,12 +89,12 @@ def main():
         scale_l = np.random.uniform(2.5, 3.5)
         places = shelvesf.loadShelf(sampler.loader, heights=heights, scale_d=scale_d, scale_l=scale_l)
 
-        print("Sampling objects")
+        logger.info("Sampling objects")
         sampler.sampler.sampleObjects(places)
-        #sampler.sampler.printStats()
+        #sampler.sampler.logger.infoStats()
 
 
-        print("Rendering scene")
+        logger.info("Rendering main scene")
         sampler.setupRenderOptions()
 
 
@@ -99,17 +104,19 @@ def main():
 
 
 
+        logger.info("Linking objects to mask scene")
         old_scene = bpy.context.screen.scene
         bpy.context.screen.scene = bpy.data.scenes[GLOBAL_CONF["scene_name_masks"]]
         for obj in sampler.modifier.objects:
             new_scene.objects.link(obj)
         #new_scene.objects.link(old_scene.camera)
         new_scene.camera=old_scene.camera
+        if clownmat is None:
+            clownmat = sampler.text.getClownMat()
+            new_scene.render.layers["RenderLayer"].material_override = clownmat
 
-        clownmat = sampler.text.getClownMat()
-        new_scene.render.layers["RenderLayer"].material_override = clownmat
-    
 
+        logger.info("Rendering mask scene")
         sampler.setupRenderOptions(new_scene)
         new_scene.cycles.pixel_filter_type = "GAUSSIAN"
         new_scene.cycles.filter_width = 0.01
@@ -127,11 +134,11 @@ def main():
         bpy.context.screen.scene = old_scene
 
 
-        print("Postprocessing result")
+        logger.info("Postprocessing result")
         utils.postprocessResultNew(GLOBAL_CONF)
-        print("Saving blend file")
-        bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
-        print("Copying result to output folder")
+        #logger.info("Saving blend file")
+        #bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
+        logger.info("Copying result to output folder")
         utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i))
 
     #utils.clearRenderFolder(GLOBAL_CONF)
