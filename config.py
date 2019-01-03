@@ -2,7 +2,7 @@ import sys, os
 import json
 
 GLOBAL_CONF = {
-    "num_samples": 10000,
+    "num_samples": 5,
     "seed": 0,
 
     "scene_save_path": "./result/main.blend",
