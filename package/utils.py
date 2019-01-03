@@ -146,17 +146,32 @@ def removeAll(scene, type=None):
     for node in nodes:
         if not node.name in ["Render Layers", "Composite"]:
             nodes.remove(node)
-    
+
 
 def removeAllNew(scene, type=None):
-    # Possible type: ‘MESH’, ‘CURVE’, ‘SURFACE’, ‘META’, ‘FONT’, ‘ARMATURE’, ‘LATTICE’, ‘EMPTY’, ‘CAMERA’, ‘LAMP’
-    for object_ in scene.objects:
-        bpy.data.objects.remove(object_, True)
+    for obj in scene.objects:
+        if "materials" in dir(obj.data) and not "cgaxis" in obj.name:
+            while obj.data.materials:
+                obj.data.materials.pop(0, update_data=True)
+        bpy.data.objects.remove(obj, True)
+
+    #bpy.ops.object.select_by_layer()
+    #bpy.ops.object.delete(use_global=False)
+
+    for material in bpy.data.materials:
+        if not material.users:
+            bpy.data.materials.remove(material)
+
+    # for datablock in bpy.data.meshes:
+    #     if datablock.users == 0:
+    #         bpy.data.meshes.remove(datablock)
+    
 
     # for o in bpy.data.objects:
     #     o.select = True
     # bpy.ops.object.delete()
 
+    #bpy.ops.outliner.orphans_purge()
 
     scene.node_tree
     scene.use_nodes=True
@@ -164,6 +179,8 @@ def removeAllNew(scene, type=None):
     for node in nodes:
         if not node.name in ["Render Layers", "Composite"]:
             nodes.remove(node)
+
+
 
 
 

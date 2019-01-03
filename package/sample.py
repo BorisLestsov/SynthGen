@@ -303,11 +303,6 @@ class OutputRegistrator:
 
 
 
-    def __del__(self):
-        self.outf.close()
-
-
-
 class ObjectAugmenter:
     def __init__(self, cfg):
         self.cfg = cfg
@@ -343,6 +338,7 @@ class TextureCreator:
         self.texlist = []
         self.tex_prefix = self.cfg["tex_prefix"]
         self.counter = 0
+        self.mat_cache = {}
         
         with open(self.cfg["texlist_file"], "r") as f:
             self.texlist = json.load(f)
@@ -360,33 +356,38 @@ class TextureCreator:
 
 
     def getTextMat(self, img_path):
-        mat_name = "{}_{}".format(img_path, self.counter)
-        self.counter += 1
-        
-        mat = bpy.data.materials.new(mat_name)        
-        mat.use_nodes = True
-        nt = mat.node_tree
-        nodes = nt.nodes
-        links = nt.links
+        if img_path in self.mat_cache:
+            return self.mat_cache[img_path]
+        else:
+            mat_name = "{}_{}".format(img_path, self.counter)
+            self.counter += 1
+            
+            mat = bpy.data.materials.new(mat_name)        
+            mat.use_nodes = True
+            nt = mat.node_tree
+            nodes = nt.nodes
+            links = nt.links
 
-        # clear
-        while(nodes): nodes.remove(nodes[0])
+            # clear
+            while(nodes): nodes.remove(nodes[0])
 
-        texcoor = nodes.new("ShaderNodeTexCoord")
-        mapping = nodes.new("ShaderNodeMapping")
-        texture = nodes.new("ShaderNodeTexImage")
-        diffuse = nodes.new("ShaderNodeBsdfDiffuse")
-        output  = nodes.new("ShaderNodeOutputMaterial")
+            texcoor = nodes.new("ShaderNodeTexCoord")
+            mapping = nodes.new("ShaderNodeMapping")
+            texture = nodes.new("ShaderNodeTexImage")
+            diffuse = nodes.new("ShaderNodeBsdfDiffuse")
+            output  = nodes.new("ShaderNodeOutputMaterial")
 
-        img = bpy.data.images.load(img_path)
-        texture.image = img
-        texture.projection = "BOX"
+            img = bpy.data.images.load(img_path)
+            texture.image = img
+            texture.projection = "BOX"
 
-        links.new(mapping.inputs['Vector'],  texcoor.outputs['Object'],)
-        links.new(texture.inputs['Vector'],  mapping.outputs['Vector'])
-        links.new(diffuse.inputs['Color'],   texture.outputs['Color'])
-        links.new( output.inputs['Surface'], diffuse.outputs['BSDF'])
-        return mat
+            links.new(mapping.inputs['Vector'],  texcoor.outputs['Object'],)
+            links.new(texture.inputs['Vector'],  mapping.outputs['Vector'])
+            links.new(diffuse.inputs['Color'],   texture.outputs['Color'])
+            links.new( output.inputs['Surface'], diffuse.outputs['BSDF'])
+
+            self.mat_cache[img_path] = mat
+            return mat
 
 
     def applyMatToObjWithTex(self, obj, mat):
@@ -400,8 +401,9 @@ class TextureCreator:
         return obj
 
     def applyMatToObj(self, obj, mat):
-        obj.data.materials[0] = mat
-
+        while obj.data.materials:
+            obj.data.materials.pop(0, update_data=True)
+        obj.data.materials.append(mat)
 
     def getLightingMat(self, strength=15.0, color=(1,1,1,1)):
 
@@ -413,7 +415,7 @@ class TextureCreator:
             nodes.remove(node)
 
         node_emission = nodes.new(type='ShaderNodeEmission')
-        node_emission.inputs[0].default_value = color  # green RGBA
+        node_emission.inputs[0].default_value = color  # color
         node_emission.inputs[1].default_value = strength # strength
 
         node_output = nodes.new(type='ShaderNodeOutputMaterial')

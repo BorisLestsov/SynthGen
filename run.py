@@ -40,8 +40,6 @@ def main():
     cache.buildCache()
     bpy.context.screen.scene = tmp_scene
 
-
-
     logger.info("Creating mask scene")
     old_scene = bpy.context.screen.scene
     bpy.ops.scene.new(type="EMPTY")     
@@ -91,7 +89,7 @@ def main():
 
         logger.info("Sampling objects")
         sampler.sampler.sampleObjects(places)
-        #sampler.sampler.logger.infoStats()
+        ####sampler.sampler.logger.infoStats()
 
 
         logger.info("Rendering main scene")
@@ -136,8 +134,9 @@ def main():
 
         logger.info("Postprocessing result")
         utils.postprocessResultNew(GLOBAL_CONF)
-        #logger.info("Saving blend file")
-        #bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
+        
+        logger.info("Saving blend file")
+        bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
         logger.info("Copying result to output folder")
         utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i))
 
