@@ -131,9 +131,9 @@ def main():
         
         bpy.context.screen.scene = old_scene
 
-
-        logger.info("Postprocessing result")
-        utils.postprocessResultNew(GLOBAL_CONF)
+        if (i+GLOBAL_CONF["seed"]) % 5 == 0:
+            logger.info("Postprocessing result")
+            utils.postprocessResultNew(GLOBAL_CONF)
         
         #logger.info("Saving blend file")
         #bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
