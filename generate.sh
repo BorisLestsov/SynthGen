@@ -1,8 +1,8 @@
 #!/bin/bash
 
-START=500
-STEP=5
-END=529
+START=0
+STEP=50
+END=99999
 
 for i in $(seq $START $STEP $END); do
     echo $i
