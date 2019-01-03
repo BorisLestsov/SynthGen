@@ -16,6 +16,7 @@ GLOBAL_CONF = {
     "texlist_file": "./texlist.txt",
     "tex_prefix": "./tex/",
     "logger_name": "logger", 
+    "logger_file": "logs/log.txt", 
 
     "scene_name" : "Scene",
     "scene_name_masks" : "SceneMasks",

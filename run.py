@@ -26,7 +26,7 @@ import cv2
 
 def main():
 
-    logger = utils.setup_custom_logger(GLOBAL_CONF["logger_name"])
+    logger = utils.setup_custom_logger(GLOBAL_CONF["logger_name"], GLOBAL_CONF["logger_file"])
     logger.info('Creating object loader')
 
     loader = ObjectLoader(GLOBAL_CONF["assets_blend_path"], GLOBAL_CONF["object_dir"])
@@ -135,10 +135,10 @@ def main():
         logger.info("Postprocessing result")
         utils.postprocessResultNew(GLOBAL_CONF)
         
-        logger.info("Saving blend file")
-        bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
+        #logger.info("Saving blend file")
+        #bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
         logger.info("Copying result to output folder")
-        utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i))
+        utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i+GLOBAL_CONF["seed"]))
 
     #utils.clearRenderFolder(GLOBAL_CONF)
 
