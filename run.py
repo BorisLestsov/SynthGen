@@ -21,10 +21,18 @@ from shelves.shelvesf import ShelvesFuncs
 
 import numpy as np
 import cv2
-
+import argparse
 
 
 def main():
+    argv = sys.argv
+    script_args = argv[argv.index("--") + 1:]
+    print(script_args)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", help="seed", default=GLOBAL_CONF["seed"], type=int)
+    args = parser.parse_args(script_args)
+    seed = args.seed
 
     logger = utils.setup_custom_logger(GLOBAL_CONF["logger_name"], GLOBAL_CONF["logger_file"])
     logger.info('Creating object loader')
@@ -59,7 +67,7 @@ def main():
 
         logger.info("Creating sampler")
         sampler = SynthGen(GLOBAL_CONF, cache, loader)
-        sampler.globalSetup(seed=i+GLOBAL_CONF["seed"])
+        sampler.globalSetup(seed=i+seed)
         shelvesf = ShelvesFuncs(GLOBAL_CONF, sampler)
 
         logger.info("Clearing Scenes")
@@ -131,14 +139,14 @@ def main():
         
         bpy.context.screen.scene = old_scene
 
-        if (i+GLOBAL_CONF["seed"]) % 5 == 0:
+        if (i+seed) % 5 == 0:
             logger.info("Postprocessing result")
             utils.postprocessResultNew(GLOBAL_CONF)
         
         #logger.info("Saving blend file")
         #bpy.ops.wm.save_as_mainfile(filepath=GLOBAL_CONF["scene_save_path"])
         logger.info("Copying result to output folder")
-        utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i+GLOBAL_CONF["seed"]))
+        utils.copyResultToOutputFolder(GLOBAL_CONF, GLOBAL_CONF["output_format"].format(i+seed))
 
     #utils.clearRenderFolder(GLOBAL_CONF)
 
