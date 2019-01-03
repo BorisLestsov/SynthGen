@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args(script_args)
     seed = args.seed
 
-    logger = utils.setup_custom_logger(GLOBAL_CONF["logger_name"], GLOBAL_CONF["logger_file"])
+    logger = utils.setup_custom_logger(GLOBAL_CONF["logger_name"], GLOBAL_CONF["logger_file"]+"_"+str(seed)+".txt")
     logger.info('Creating object loader')
 
     loader = ObjectLoader(GLOBAL_CONF["assets_blend_path"], GLOBAL_CONF["object_dir"])
