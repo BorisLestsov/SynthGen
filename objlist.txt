@@ -630,5 +630,1077 @@
         "stackable": false,
         "rotatable_x": false,
         "rotatable_y": false
+    },
+    {
+        "class": 80,
+        "name": "cgaxis_models_64_19_03.114",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 81,
+        "name": "cgaxis_models_64_19_02.027",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 82,
+        "name": "cgaxis_models_64_19_02.015",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 83,
+        "name": "cgaxis_models_64_19_02.013",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 84,
+        "name": "cgaxis_models_64_19_02.011",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 85,
+        "name": "cgaxis_models_64_19_02.009",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 86,
+        "name": "cgaxis_models_64_19_02.007",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 87,
+        "name": "cgaxis_models_64_19_02.003",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 88,
+        "name": "cgaxis_models_64_19_01.180",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 89,
+        "name": "cgaxis_models_64_19_01.150",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 90,
+        "name": "cgaxis_models_64_19_01.148",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 91,
+        "name": "cgaxis_models_64_19_01.112",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 92,
+        "name": "cgaxis_models_64_19_01.098",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 93,
+        "name": "cgaxis_models_64_19_01.060",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 94,
+        "name": "cgaxis_models_64_19_01.022",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 95,
+        "name": "cgaxis_models_64_19_03.121",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 96,
+        "name": "cgaxis_models_64_19_03.120",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 97,
+        "name": "cgaxis_models_64_19_03.114",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 98,
+        "name": "cgaxis_models_64_19_03.093",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 99,
+        "name": "cgaxis_models_64_19_03.059",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 100,
+        "name": "cgaxis_models_64_19_03.057",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 101,
+        "name": "cgaxis_models_64_19_04.061",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 102,
+        "name": "cgaxis_models_64_19_04.047",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 103,
+        "name": "cgaxis_models_64_19_04.001",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 104,
+        "name": "cgaxis_models_64_18_02.004",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 105,
+        "name": "cgaxis_models_64_18_04.113",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 106,
+        "name": "cgaxis_models_64_18_04.107",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 107,
+        "name": "cgaxis_models_64_18_04.105",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 108,
+        "name": "cgaxis_models_64_18_04.081",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 109,
+        "name": "cgaxis_models_64_18_03.020",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 110,
+        "name": "cgaxis_models_64_18_03.019",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 111,
+        "name": "cgaxis_models_64_18_03.016",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 112,
+        "name": "cgaxis_models_64_18_03.002",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 113,
+        "name": "cgaxis_models_64_18_01.147",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 114,
+        "name": "cgaxis_models_64_18_01.091",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 115,
+        "name": "cgaxis_models_64_13_01.033",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 116,
+        "name": "cgaxis_models_64_13_01.025",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 117,
+        "name": "cgaxis_models_64_13_01.023",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 118,
+        "name": "cgaxis_models_64_13_01.016",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 119,
+        "name": "cgaxis_models_64_13_01.008",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 120,
+        "name": "cgaxis_models_64_13_01.006",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 121,
+        "name": "cgaxis_models_64_12_01.039",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 122,
+        "name": "cgaxis_models_64_08_02.037",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 123,
+        "name": "cgaxis_models_64_08_03.036",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 124,
+        "name": "cgaxis_models_64_08_04",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 125,
+        "name": "cgaxis_models_64_07_04.049",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 126,
+        "name": "cgaxis_models_64_07_03.008",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 127,
+        "name": "cgaxis_models_64_07_02.024",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 128,
+        "name": "cgaxis_models_64_05_05.025",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 129,
+        "name": "cgaxis_models_64_05_05.024",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 130,
+        "name": "cgaxis_models_64_05_05.020",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 131,
+        "name": "cgaxis_models_64_05_05.006",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 132,
+        "name": "cgaxis_models_64_05_08.004",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 133,
+        "name": "cgaxis_models_64_05_08.001",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 134,
+        "name": "cgaxis_models_64_05_06.034",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 135,
+        "name": "cgaxis_models_64_05_06.031",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 136,
+        "name": "cgaxis_models_64_05_06.010",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 137,
+        "name": "cgaxis_models_64_05_07.010",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 138,
+        "name": "cgaxis_models_64_05_07.002",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 139,
+        "name": "cgaxis_models_64_05_11.071",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 140,
+        "name": "cgaxis_models_64_05_11.029",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 141,
+        "name": "cgaxis_models_64_05_11.003",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 142,
+        "name": "cgaxis_models_64_05_09.103",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 143,
+        "name": "cgaxis_models_64_05_09.097",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 144,
+        "name": "cgaxis_models_64_05_09.091",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 145,
+        "name": "cgaxis_models_64_05_09.022",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 146,
+        "name": "cgaxis_models_64_05_10.026",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 147,
+        "name": "cgaxis_models_64_05_10.016",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 148,
+        "name": "cgaxis_models_64_05_10.014",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 149,
+        "name": "cgaxis_models_64_05_10.004",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 150,
+        "name": "cgaxis_models_64_05_12.020",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 151,
+        "name": "cgaxis_models_64_05_12.004",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 152,
+        "name": "cgaxis_models_64_05_12.002",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 153,
+        "name": "cgaxis_models_64_04_05.169",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 154,
+        "name": "cgaxis_models_64_04_05.126",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 155,
+        "name": "cgaxis_models_64_04_05.024",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 156,
+        "name": "cgaxis_models_64_04_05.012",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 157,
+        "name": "cgaxis_models_64_04_05.006",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 158,
+        "name": "cgaxis_models_64_04_06.135",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 159,
+        "name": "cgaxis_models_64_04_06.133",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 160,
+        "name": "cgaxis_models_64_04_06.092",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 161,
+        "name": "cgaxis_models_64_04_06.035",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 162,
+        "name": "cgaxis_models_64_04_06.028",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 163,
+        "name": "cgaxis_models_64_04_06.003",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 164,
+        "name": "cgaxis_models_64_04_07.063",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 165,
+        "name": "cgaxis_models_64_04_07.062",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 166,
+        "name": "cgaxis_models_64_04_07.030",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 167,
+        "name": "cgaxis_models_64_04_07.025",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 168,
+        "name": "cgaxis_models_64_04_09.033",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 169,
+        "name": "cgaxis_models_64_04_09.023",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 170,
+        "name": "cgaxis_models_64_04_09.017",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 171,
+        "name": "cgaxis_models_64_04_09.003",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 172,
+        "name": "cgaxis_models_64_03_11.008",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 173,
+        "name": "cgaxis_models_64_03_11.006",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 174,
+        "name": "cgaxis_models_64_03_11.004",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 175,
+        "name": "cgaxis_models_64_03_09.020",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 176,
+        "name": "cgaxis_models_64_03_09.019",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 177,
+        "name": "cgaxis_models_64_03_09.018",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 178,
+        "name": "cgaxis_models_64_03_09.017",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 179,
+        "name": "cgaxis_models_64_03_09.004",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 180,
+        "name": "cgaxis_models_64_03_08.011",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 181,
+        "name": "cgaxis_models_64_03_08.010",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 182,
+        "name": "cgaxis_models_64_03_08.002",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 183,
+        "name": "cgaxis_models_64_03_07.010",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 184,
+        "name": "cgaxis_models_64_03_07.007",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 185,
+        "name": "cgaxis_models_64_03_07.005",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 186,
+        "name": "cgaxis_models_64_03_07.004",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 187,
+        "name": "cgaxis_models_64_03_06.006",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 188,
+        "name": "cgaxis_models_64_03_06.005",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 189,
+        "name": "cgaxis_models_64_03_06.002",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 190,
+        "name": "cgaxis_models_64_03_06.001",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 191,
+        "name": "cgaxis_models_64_03_05.014",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 192,
+        "name": "cgaxis_models_64_03_05.004",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 193,
+        "name": "cgaxis_models_64_03_09",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 194,
+        "name": "cgaxis_models_64_02_08.171",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 195,
+        "name": "cgaxis_models_64_02_08.046",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 196,
+        "name": "cgaxis_models_64_02_08.011",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 197,
+        "name": "cgaxis_models_64_02_08.007",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 198,
+        "name": "cgaxis_models_64_02_05.062",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 199,
+        "name": "cgaxis_models_64_02_05.037",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 200,
+        "name": "cgaxis_models_64_02_05.005",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 201,
+        "name": "cgaxis_models_64_02_05.004",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 202,
+        "name": "cgaxis_models_64_02_05.002",
+        "rotatable_z": true,
+        "stackable": true,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 203,
+        "name": "cgaxis_models_64_02_07.125",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 204,
+        "name": "cgaxis_models_64_02_07.115",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 205,
+        "name": "cgaxis_models_64_02_07.081",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 206,
+        "name": "cgaxis_models_64_02_07.057",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 207,
+        "name": "cgaxis_models_64_02_07.053",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 208,
+        "name": "cgaxis_models_64_02_07.007",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 209,
+        "name": "cgaxis_models_64_02_07.003",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 210,
+        "name": "cgaxis_models_64_02_06.082",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 211,
+        "name": "cgaxis_models_64_02_06.057",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 212,
+        "name": "cgaxis_models_64_02_06.035",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
+    },
+    {
+        "class": 213,
+        "name": "cgaxis_models_64_02_06.005",
+        "rotatable_z": true,
+        "stackable": false,
+        "rotatable_x": false,
+        "rotatable_y": false
     }
 ]

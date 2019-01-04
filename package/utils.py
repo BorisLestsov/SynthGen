@@ -162,6 +162,10 @@ def removeAllNew(scene, type=None):
         if not material.users:
             bpy.data.materials.remove(material)
 
+    for block in bpy.data.meshes:
+        if block.users == 0:
+            bpy.data.meshes.remove(block)
+
     # for datablock in bpy.data.meshes:
     #     if datablock.users == 0:
     #         bpy.data.meshes.remove(datablock)

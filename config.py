@@ -2,7 +2,7 @@ import sys, os
 import json
 
 GLOBAL_CONF = {
-    "num_samples": 5,
+    "num_samples": 100,
     "seed": 0,
 
     "scene_save_path": "./result/main.blend",
@@ -19,7 +19,7 @@ GLOBAL_CONF = {
 
     "scene_name" : "Scene",
     "scene_name_masks" : "SceneMasks",
-    "resolution_x" : 1080,
+    "resolution_x" : 1920,
     "resolution_y" : 1920,
     "result_resolution_x" : None,
     "result_resolution_y" : None,

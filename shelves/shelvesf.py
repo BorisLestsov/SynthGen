@@ -35,6 +35,10 @@ class ShelvesFuncs:
             utils.shiftObj(obj, (-plane.dimensions.x*i*5, 0, 0))
 
 
+    def lin_sol(self, x1, x2, y1, y2):
+        a = (y1-y2)/(x1-x2)
+        b = y2 - a*x2
+        return a, b
 
 
     def setupCamera(self):
@@ -42,10 +46,18 @@ class ShelvesFuncs:
         camera_loc_y = np.random.uniform(-4.95, -2)
         camera_loc_z = np.random.uniform(0.8, 2)
 
+        a, b = self.lin_sol(2, 5, pi/4, pi/18)
+        adiff =  a*(-camera_loc_y)+b
+        alpha = np.arctan(-camera_loc_y/camera_loc_x)
+        if camera_loc_x > 0:
+            alpha = pi/2 - alpha
+        else:
+            alpha = -pi/2 - alpha
+
         camera_rot_x = np.random.uniform(pi/2-pi/12, pi/2+pi/36)
-        #camera_rot_x = pi/2
         camera_rot_y = np.random.uniform(0   -pi/36, 0   +pi/36)
-        camera_rot_z = np.random.uniform(0   -pi/6 , 0   +pi/6)
+        camera_rot_z = np.random.uniform(alpha-adiff, alpha+adiff)
+
 
         # Create camera
         bpy.ops.object.add(type='CAMERA', location=(camera_loc_x, camera_loc_y, camera_loc_z))
