@@ -133,7 +133,7 @@ class ObjectSampler2D:
             marg_h = pt1[2]
 
             stackable = w > h/3 and d > h/3
-            times_h = 1 if not obj_prop["stackable"] else min(times_h, 4)
+            times_h = 1 if not obj_prop["stackable"] else np.random.randint(1, times_h+1)
 
             transforms = []
             #if obj_prop["rotatable_z"]:

@@ -136,7 +136,7 @@ class ShelvesFuncs:
             places.append([left_pt, right_pt])
             i += 1
 
-        places[-1][1][2] += prev_obj_mid.dimensions[1]*1.5
+        places[-1][1][2] += prev_obj_mid.dimensions[1]*1.25
 
         # mat = bpy.data.materials.new(name="DebugMat")
         # mat.diffuse_color = (1, 0, 0)

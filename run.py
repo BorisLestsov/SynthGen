@@ -139,7 +139,7 @@ def main():
         
         bpy.context.screen.scene = old_scene
 
-        if (i+seed) % 5 == 0:
+        if (i+seed) % 25 == 0:
             logger.info("Postprocessing result")
             utils.postprocessResultNew(GLOBAL_CONF)
         
