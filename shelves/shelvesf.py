@@ -40,6 +40,11 @@ class ShelvesFuncs:
         b = y2 - a*x2
         return a, b
 
+    def lin_sol(self, x1, x2, y1, y2):
+        a = (y1-y2)/(x1-x2)
+        b = y2 - a*x2
+        return a, b
+
 
     def setupCamera(self):
         camera_loc_x = np.random.uniform(-1.5, 1.5)
@@ -65,7 +70,6 @@ class ShelvesFuncs:
         utils.setObjRot(self.cam, (camera_rot_x, camera_rot_y, camera_rot_z))
         # Make this the current camera
         bpy.context.scene.camera = self.cam
-
 
     def setupEnv(self):
 
